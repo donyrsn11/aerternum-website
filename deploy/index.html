@@ -88,10 +88,10 @@
 
 <!-- ============ HEADER ============ -->
 <header style="{{ headerStyle }}">
-  <div style="max-width:1320px;margin:0 auto;padding:0 30px;height:80px;display:flex;align-items:center;gap:24px;">
+  <div style="max-width:1320px;margin:0 auto;padding:8px 30px 0;height:100px;display:flex;align-items:center;gap:24px;">
     <a href="#" onClick="{{ go }}" data-page="home" style="display:flex;align-items:center;text-decoration:none;flex-shrink:0;margin-right:auto;">
-      <sc-if value="{{ onHero }}" hint-placeholder-val="{{ true }}"><img src="assets/logo-white.png" alt="Aerternum Legal Partnership" style="height:48px;width:auto;display:block;"></sc-if>
-      <sc-if value="{{ notOnHero }}" hint-placeholder-val="{{ false }}"><img src="assets/logo.png" alt="Aerternum Legal Partnership" style="height:48px;width:auto;display:block;"></sc-if>
+      <sc-if value="{{ onHero }}" hint-placeholder-val="{{ true }}"><img src="assets/logo-white.png" alt="Aerternum Legal Partnership" style="height:64px;width:auto;display:block;"></sc-if>
+      <sc-if value="{{ notOnHero }}" hint-placeholder-val="{{ false }}"><img src="assets/logo.png" alt="Aerternum Legal Partnership" style="height:64px;width:auto;display:block;"></sc-if>
     </a>
     <nav class="alp-desktop-nav alp-navgroup" style="display:flex;align-items:center;gap:32px;">
       <sc-for list="{{ nav }}" as="item" hint-placeholder-count="7">
@@ -648,6 +648,14 @@ class Component extends DCLogic {
     window.addEventListener('scroll', this._onScroll, { passive: true });
     this._onKey = (e) => { if (e.key === 'Escape') this.setState({ searchOpen:false, talkOpen:false, modal:null }); };
     window.addEventListener('keydown', this._onKey);
+    // clean-URL routing: set initial page from the address, and handle back/forward
+    try {
+      const initial = this.pageFromPath(window.location.pathname);
+      this.syncUrl(initial, true);
+      if (initial !== this.state.page) this.setState({ page: initial });
+    } catch (e) {}
+    this._onPop = () => { const pg = this.pageFromPath(window.location.pathname); this.setState({ page: pg, modal:null, navOpen:false }); };
+    window.addEventListener('popstate', this._onPop);
     requestAnimationFrame(() => requestAnimationFrame(() => this._scan()));
     this._mountVideo();
     // failsafe: never leave content permanently hidden
@@ -667,15 +675,22 @@ class Component extends DCLogic {
       c.setAttribute('data-url', url);
       c.innerHTML = '';
       const v = document.createElement('video');
-      v.autoplay = true; v.muted = true; v.loop = true; v.setAttribute('muted',''); v.setAttribute('playsinline',''); v.preload = 'auto';
-      v.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;image-rendering:auto;';
-      const s = document.createElement('source'); s.src = url; v.appendChild(s);
-      c.appendChild(v); const p = v.play && v.play(); if (p && p.catch) p.catch(() => {});
+      v.autoplay = true; v.muted = true; v.loop = true; v.defaultMuted = true;
+      v.setAttribute('muted',''); v.setAttribute('autoplay',''); v.setAttribute('loop',''); v.setAttribute('playsinline',''); v.setAttribute('webkit-playsinline','');
+      v.preload = 'auto'; v.src = url;
+      v.style.cssText = 'width:100%;height:100%;object-fit:cover;display:block;';
+      c.appendChild(v);
+      try { v.load(); } catch (e) {}
+      const tryPlay = () => { const p = v.play && v.play(); if (p && p.catch) p.catch(() => {}); };
+      tryPlay();
+      v.addEventListener('canplay', tryPlay, { once: true });
+      document.addEventListener('click', tryPlay, { once: true });
     } else if (c.getAttribute('data-url')) { c.innerHTML = ''; c.removeAttribute('data-url'); }
   }
   componentWillUnmount() {
     if (this._onScroll) window.removeEventListener('scroll', this._onScroll);
     if (this._onKey) window.removeEventListener('keydown', this._onKey);
+    if (this._onPop) window.removeEventListener('popstate', this._onPop);
     if (this._io) this._io.disconnect();
     if (this._failsafe) clearTimeout(this._failsafe);
   }
@@ -1026,10 +1041,34 @@ class Component extends DCLogic {
   openPrivacy = () => this.setState({ modal:{ kind:'text', which:'privacy' } });
   openDisclaimer = () => this.setState({ modal:{ kind:'text', which:'disclaimer' } });
 
+  ROUTES = {
+    home:    { path: '/' },
+    services:{ path: '/practice-areas' },
+    team:    { path: '/our-team' },
+    clients: { path: '/clients' },
+    news:    { path: '/insights' },
+    careers: { path: '/careers' },
+    contact: { path: '/contact' },
+  };
+  pageFromPath(pathname) {
+    const p = (pathname || '/').replace(/\/+$/, '') || '/';
+    for (const key in this.ROUTES) { if (this.ROUTES[key].path === p) return key; }
+    return 'home';
+  }
+  syncUrl(page, replace) {
+    try {
+      const path = (this.ROUTES[page] && this.ROUTES[page].path) || '/';
+      if (window.location.pathname !== path) {
+        window.history[replace ? 'replaceState' : 'pushState']({ page }, '', path);
+      }
+    } catch (e) {}
+  }
+
   go = (e) => {
     if (e && e.preventDefault) e.preventDefault();
     const page = (e.currentTarget && e.currentTarget.dataset.page) || 'home';
     const anchor = (e.currentTarget && e.currentTarget.dataset.anchor) || '';
+    this.syncUrl(page);
     this.setState({ page, navOpen:false, modal:null }, () => {
       setTimeout(() => {
         if (anchor) { const el = document.getElementById(anchor); if (el) { window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 84, behavior:'smooth' }); return; } }
@@ -1039,6 +1078,7 @@ class Component extends DCLogic {
   };
   goContactFromModal = (e) => {
     if (e && e.preventDefault) e.preventDefault();
+    this.syncUrl('contact');
     this.setState({ page:'contact', modal:null, navOpen:false }, () => { setTimeout(() => window.scrollTo({ top:0, behavior:'auto' }), 30); });
   };
   onField = (e) => { const { name, value } = e.target; this.setState(s => ({ form: { ...s.form, [name]: value } })); };
