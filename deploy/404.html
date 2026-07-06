@@ -695,8 +695,8 @@ class Component extends DCLogic {
     // clean-URL routing: set initial page from the address, and handle back/forward
     try {
       const initial = this.pageFromPath(window.location.pathname);
-      this.syncUrl(initial, true);
       const ins0 = this.insightFromPath(window.location.pathname);
+      if (ins0 < 0) this.syncUrl(initial, true);
       const patch = {};
       if (initial !== this.state.page) patch.page = initial;
       if (ins0 >= 0) patch.modal = { kind:'insight', index: ins0 };
