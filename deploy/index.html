@@ -353,13 +353,34 @@
     </div>
   </section>
   <section style="padding:76px 28px 104px;background:#F4F2EC;">
-    <div style="max-width:1000px;margin:0 auto;">
-      <div data-reveal="" style="background:#fff;border:1px solid #E8E2D6;border-radius:6px;padding:72px 40px;text-align:center;">
-        <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#DD3B49" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 24px;display:block;"><path d="M4 4h11a2 2 0 0 1 2 2v14l-4-2.5L9 20l-4-2.5V6a2 2 0 0 1 2-2z"></path><path d="M8 8h6"></path><path d="M8 12h4"></path></svg>
-        <h3 style="font-family:'Source Serif 4',Georgia,serif;font-weight:500;font-size:clamp(24px,3vw,32px);line-height:1.2;letter-spacing:-.01em;margin:0 0 12px;color:#1E1714;">{{ t.news.emptyTitle }}</h3>
-        <p style="font-size:16px;line-height:1.7;color:#6B6259;max-width:50ch;margin:0 auto 28px;">{{ t.news.emptyText }}</p>
-        <button onClick="{{ toggleTalk }}" class="alp-talkbtn" style="background:#DD3B49;color:#F4F2EC;padding:14px 28px;border-radius:30px;font-weight:700;font-size:14px;border:none;cursor:pointer;font-family:inherit;letter-spacing:.02em;">{{ t.navCta }}</button>
+    <div style="max-width:1100px;margin:0 auto;">
+      <div style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:44px;">
+        <sc-for list="{{ insightTopicTabs }}" as="tb" hint-placeholder-count="7">
+          <button onClick="{{ setInsightTopic }}" data-topic="{{ tb.name }}" style="{{ tb.style }}">{{ tb.name }}</button>
+        </sc-for>
       </div>
+      <sc-if value="{{ hasInsights }}" hint-placeholder-val="{{ false }}">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:20px;">
+          <sc-for list="{{ insightCards }}" as="n" hint-placeholder-count="2">
+            <button onClick="{{ openInsight }}" data-index="{{ n.idx }}" class="alp-insight-card" style="text-align:left;background:#fff;border:1px solid #E8E2D6;border-radius:6px;padding:30px 30px 28px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;transition:transform .4s cubic-bezier(.16,.84,.32,1),box-shadow .4s cubic-bezier(.16,.84,.32,1),border-color .4s;" style-hover="transform:translateY(-5px);box-shadow:0 18px 44px rgba(30,23,20,.12);border-color:#DD3B49;">
+              <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+                <span style="font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#DD3B49;background:#FBEDEE;padding:5px 11px;border-radius:30px;">{{ n.topic }}</span>
+                <span style="font-size:12.5px;color:#8A8576;">{{ n.date }}</span>
+              </div>
+              <h3 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:21px;line-height:1.28;letter-spacing:-.01em;margin:0 0 12px;color:#1E1714;">{{ n.title }}</h3>
+              <p style="font-size:14.5px;line-height:1.65;color:#6B6259;margin:0 0 20px;">{{ n.summary }}</p>
+                <span style="margin-top:auto;font-size:13px;font-weight:600;color:#1E1714;border-bottom:2px solid #DD3B49;padding-bottom:3px;align-self:flex-start;">{{ t.news.readMore }} &rarr;</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <sc-if value="{{ noInsights }}" hint-placeholder-val="{{ true }}">
+        <div data-reveal="" style="background:#fff;border:1px solid #E8E2D6;border-radius:6px;padding:64px 40px;text-align:center;">
+          <svg width="46" height="46" viewBox="0 0 24 24" fill="none" stroke="#DD3B49" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" style="margin:0 auto 22px;display:block;"><path d="M4 4h11a2 2 0 0 1 2 2v14l-4-2.5L9 20l-4-2.5V6a2 2 0 0 1 2-2z"></path><path d="M8 8h6"></path><path d="M8 12h4"></path></svg>
+          <h3 style="font-family:'Source Serif 4',Georgia,serif;font-weight:500;font-size:clamp(22px,3vw,28px);line-height:1.2;letter-spacing:-.01em;margin:0 0 12px;color:#1E1714;">{{ t.news.emptyTitle }}</h3>
+          <p style="font-size:15.5px;line-height:1.7;color:#6B6259;max-width:50ch;margin:0 auto;">{{ t.news.emptyTopic }}</p>
+        </div>
+      </sc-if>
     </div>
   </section>
 </div>
@@ -610,6 +631,28 @@
         </div>
       </sc-if>
 
+      <sc-if value="{{ modalIsInsight }}" hint-placeholder-val="{{ false }}">
+        <div style="width:min(900px,94vw);max-width:100%;display:flex;flex-direction:column;max-height:90vh;">
+          <div style="padding:30px 36px 22px;border-bottom:1px solid #E8E2D6;flex-shrink:0;">
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+              <span style="font-size:10.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#DD3B49;background:#FBEDEE;padding:6px 12px;border-radius:30px;">{{ md.topic }}</span>
+              <span style="font-size:12.5px;color:#8A8576;">{{ md.date }}</span>
+            </div>
+            <h3 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:clamp(22px,3vw,28px);line-height:1.18;letter-spacing:-.01em;margin:0;color:#1E1714;padding-right:40px;">{{ md.title }}</h3>
+          </div>
+          <div style="flex:1;min-height:0;background:#525659;">
+            <iframe src="{{ md.pdfView }}" title="{{ md.title }}" style="width:100%;height:74vh;border:none;display:block;"></iframe>
+          </div>
+          <div style="padding:16px 36px;border-top:1px solid #E8E2D6;flex-shrink:0;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;">
+            <span style="font-size:13.5px;color:#6B6259;">{{ t.news.ctaLine }}</span>
+            <div style="display:flex;gap:10px;">
+              <a href="{{ md.pdf }}" target="_blank" rel="noopener" style="border:1px solid #E0D8C8;color:#1E1714;padding:11px 20px;border-radius:30px;font-weight:600;font-size:13.5px;text-decoration:none;">{{ t.news.openTab }}</a>
+              <a href="#" onClick="{{ goContactFromModal }}" style="background:#DD3B49;color:#F4F2EC;padding:11px 22px;border-radius:30px;font-weight:700;font-size:13.5px;text-decoration:none;">{{ t.navCta }}</a>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
     </div>
   </div>
 </sc-if>
@@ -637,6 +680,7 @@ class Component extends DCLogic {
     form: { name:'', email:'', phone:'', area:'', message:'' },
     page: 'home', scrolled: false,
     searchOpen: false, searchQ: '', talkOpen: false,
+    insightTopic: 'All',
   };
 
   componentDidMount() {
@@ -778,6 +822,8 @@ class Component extends DCLogic {
         kicker: 'Law Insights', title: 'Market & Regulatory Updates',
         intro: 'Considered analysis on the legal and regulatory developments that matter to your business in Indonesia.',
         emptyTitle: 'Insights are on the way', emptyText: 'We are preparing a series of articles and updates on the developments shaping business law in Indonesia. In the meantime, we would be glad to discuss your specific questions.',
+        emptyTopic: 'No insights under this topic yet. Please check back soon, or explore another topic above.',
+        readMore: 'Read insight', ctaLine: 'Have a question on this topic?', openTab: 'Open in new tab',
         items: [],
       },
       careers: {
@@ -865,6 +911,8 @@ class Component extends DCLogic {
         kicker: 'Wawasan Hukum', title: 'Pembaruan Pasar & Regulasi',
         intro: 'Analisis ringkas atas perkembangan hukum dan regulasi yang penting bagi bisnis Anda di Indonesia.',
         emptyTitle: 'Wawasan akan segera hadir', emptyText: 'Kami sedang menyiapkan rangkaian artikel dan pembaruan mengenai perkembangan hukum bisnis di Indonesia. Sementara itu, dengan senang hati kami mendiskusikan pertanyaan spesifik Anda.',
+        emptyTopic: 'Belum ada wawasan pada topik ini. Silakan cek kembali nanti, atau pilih topik lain di atas.',
+        readMore: 'Baca wawasan', ctaLine: 'Punya pertanyaan tentang topik ini?', openTab: 'Buka di tab baru', emptyTopicUnused: '',
         items: [],
       },
       careers: {
@@ -981,6 +1029,29 @@ class Component extends DCLogic {
 
   CLIENTS = ['Lufthansa Airlines','PT Victoria Investama Tbk','Bank Victoria','PT Tanamera Kopi Indonesia','Yougov Singapore Ltd','PT Sampoerna Kayoe','PT Americana Nusantara Abadi (Briq Bistro)','PT Nirvana Wastu Pratama Property','Mewah International Inc','PT Indonesia Logam Pratama (Treasury)','PT Basis Inovasi Global (BASE)','PT Koboi Nusantara Abadi (Bebop Bar + Kitchen)','PT Citra Megah Selecomindo (Reflecto)','PT Privy Identitas Digital (Privy)','PT ID Pay Asia Jaya (IDPay)','PT Hidup Makmur Terencana','PT KDB Tifa Finance Tbk','PT Olahan Nusantara Abadi (Brock Butchery)'];
 
+  INSIGHT_TOPICS = ['All','Investment','Corporate Matters','Financing','Employment','Intellectual Property','Dispute Resolution'];
+
+  INSIGHTS = [
+    {
+      topic: 'Employment',
+      date: '30 Apr 2026',
+      pdf: 'assets/insights/outsourcing-permenaker-7-2026.pdf',
+      title: 'Minister of Manpower Regulation No. 7 of 2026 on Outsourced Work',
+      summary: 'A consolidated framework for outsourcing in Indonesia \u2014 the permitted scope of outsourced work, the mandatory contents of an outsourcing agreement, worker protection, and the compliance obligations of both provider and principal.',
+      body: [
+        {h:'', p:['On 30 April 2026, the Minister of Manpower issued Regulation No. 7 of 2026 on Outsourced Work (\u201cthe Regulation\u201d), which took effect on the same date. The Regulation establishes a consolidated framework for outsourcing in Indonesia, setting out the categories of work that may be outsourced, the minimum contents of an outsourcing agreement, the protection of outsourced workers, and the compliance obligations of both the outsourcing company and the company that engages it. This update outlines its principal provisions and their practical implications for businesses.']},
+        {h:'1. Legal Basis', p:['The Regulation must be read together with: Minister of Manpower Regulation No. 7 of 2026 (\u201cPermenaker 7/2026\u201d), the principal instrument governing outsourcing; Law No. 6 of 2023 on Job Creation, whose Article 64(2) permits a company to delegate part of the performance of its work to another enterprise under a written outsourcing agreement; Constitutional Court Decision No. 168/PUU-XXI/2023, which directs the Government to limit the types and fields of work that may be outsourced and to secure the rights of outsourced workers; and Government Regulation No. 35 of 2021 on Fixed-Term Employment, Outsourcing, Working Time and Rest, and Termination of Employment.']},
+        {h:'2. Definitions', p:['The Regulation distinguishes two parties. The Outsourcing Company (Perusahaan Alih Daya) is a business entity, in the form of a legal entity, qualified to perform specific work under an agreement with the Principal Company; a provider that is not an incorporated legal entity may not act as an outsourcing company. The Principal Company (Perusahaan Pemberi Pekerjaan) is the company that delegates part of the performance of its operations to an Outsourcing Company.']},
+        {h:'3. Permissible Scope of Outsourcing', p:['A Principal Company may delegate only part of its work, and only under a written outsourcing agreement. The Regulation confines outsourcing to supporting activities in the following fields: cleaning services; provision of food and beverages; security services; provision of drivers and transportation for workers; operational support services; and supporting work in the mining, oil and gas, and electricity sectors.','The Regulation does not define \u201coperational support services.\u201d Until further guidance is issued, this category should be construed narrowly and confined to genuinely ancillary support, rather than relied upon to outsource core or production activities. Consistent with the Constitutional Court decision it implements, the Regulation is directed at supporting work only; a company\u2019s core or production activities may not be outsourced.']},
+        {h:'4. The Outsourcing Agreement and Its Registration', p:['Outsourcing must be effected through a written outsourcing agreement setting out, at a minimum: the scope of the work delegated; the term of the agreement; the place where the work is to be performed; the number of outsourced workers; the protection and entitlements of the workers (at least wages, overtime pay, working hours, rest periods, annual leave, occupational safety and health, social security, the religious holiday allowance, and rights upon termination); and the respective rights and obligations of the parties.','Primary responsibility for delivering these entitlements rests with the Outsourcing Company, but the Principal Company remains under a duty to ensure its provider complies with applicable manpower-law standards. Within 3 working days of signing, the Outsourcing Company must register the agreement with the local manpower office (kabupaten/kota), enclosing a copy; once requirements are met, the office issues proof of registration. As the agreement is submitted to an Indonesian government office, it should be drawn up in Bahasa Indonesia or in bilingual form, since an agreement in a foreign language alone may be challenged by the authorities.']},
+        {h:'5. Obligations of the Outsourcing Company', p:['As the holder of a business licence in the outsourcing sector, the Outsourcing Company must: apply occupational safety, occupational health, and environmental-protection standards; register each outsourcing agreement with the local manpower office; and commence its business activities no later than one year after its business licence is issued. A breach may attract administrative sanctions under the prevailing rules on risk-based business licensing. Correspondingly, the Principal Company must satisfy itself that its provider observes these standards.']},
+        {h:'6. Administrative Sanctions', p:['A Principal Company that contravenes the provisions on the permitted types and fields of outsourced work is liable to administrative sanctions imposed in stages, beginning with a written warning and extending to restrictions on business activity. Such restrictions may include limitations on the capacity to produce goods and/or services for a specified period, and/or suspension of business licensing at one or more locations. They are imposed by the licensing authority on the recommendation of the Manpower Inspector. An Outsourcing Company that fails to meet its obligations is likewise subject to administrative sanctions.']},
+        {h:'7. Transitional Provisions', p:['Outsourcing agreements concluded before the Regulation took effect remain valid until the expiry of their terms. Where the type or scope of the outsourced work does not conform to the Regulation, the Principal Company has a transitional period to make the necessary adjustments \u2014 no later than 2 years from the date the Regulation entered into force, that is, by 30 April 2028. Companies engaging outsourced labour should review existing arrangements against the permitted categories, align their agreements with the mandatory requirements, and plan any necessary adjustments well before the transitional deadline.']},
+        {h:'Disclaimer', p:['This Legal Insight is prepared by Aerternum Legal Partnership for general information only and does not constitute legal advice. Should you have any specific questions regarding the matters discussed herein, please do not hesitate to contact us.']},
+      ],
+    },
+  ];
+
   CLIENT_DOMAINS = {
     'Lufthansa Airlines': 'lufthansa.com',
     'Bank Victoria': 'bankvictoria.co.id',
@@ -1038,6 +1109,8 @@ class Component extends DCLogic {
   closeModal = () => this.setState({ modal:null });
   openService = (e) => this.setState({ modal:{ kind:'service', index:Number(e.currentTarget.dataset.index) } });
   openTeam = (e) => this.setState({ modal:{ kind:'team', index:Number(e.currentTarget.dataset.index) } });
+  openInsight = (e) => this.setState({ modal:{ kind:'insight', index:Number(e.currentTarget.dataset.index) } });
+  setInsightTopic = (e) => this.setState({ insightTopic: e.currentTarget.dataset.topic });
   openPrivacy = () => this.setState({ modal:{ kind:'text', which:'privacy' } });
   openDisclaimer = () => this.setState({ modal:{ kind:'text', which:'disclaimer' } });
 
@@ -1167,12 +1240,28 @@ class Component extends DCLogic {
     ];
 
     const modal = this.state.modal;
-    let md = {}, modalIsService=false, modalIsTeam=false, modalIsText=false;
+    let md = {}, modalIsService=false, modalIsTeam=false, modalIsText=false, modalIsInsight=false;
     if (modal) {
       if (modal.kind === 'service') { md = { ...services[modal.index], icon: buildIcon(modal.index, 38) }; modalIsService = true; }
       else if (modal.kind === 'team') { const p = team[modal.index]; md = { ...p, mailto:'mailto:'+p.email }; modalIsTeam = true; }
       else if (modal.kind === 'text') { md = { ...this.TEXTS[lang][modal.which] }; modalIsText = true; }
+      else if (modal.kind === 'insight') {
+        const raw = this.INSIGHTS[modal.index];
+        md = { ...raw, pdfView: raw.pdf + '#toolbar=1&view=FitH', body: raw.body.map(s => ({ ...s, hasH: !!s.h })) };
+        modalIsInsight = true;
+      }
     }
+
+    const activeTopic = this.state.insightTopic || 'All';
+    const insightTopicTabs = this.INSIGHT_TOPICS.map(name => {
+      const on = name === activeTopic;
+      const style = 'background:' + (on ? '#1E1714' : '#fff') + ';color:' + (on ? '#F4F2EC' : '#403A35')
+        + ';border:1px solid ' + (on ? '#1E1714' : '#E0D8C8') + ';border-radius:30px;padding:10px 18px;cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:600;letter-spacing:.01em;transition:background .25s ease,color .25s ease,border-color .25s ease;';
+      return { name, style };
+    });
+    const insightCards = this.INSIGHTS
+      .map((n, i) => ({ topic: n.topic, date: n.date, title: n.title, summary: n.summary, idx: i }))
+      .filter(n => activeTopic === 'All' || n.topic === activeTopic);
 
     return {
       t, lang, nav, navLeft, navRight, whyList,
@@ -1184,6 +1273,9 @@ class Component extends DCLogic {
         return { name, slug, idx: i };
       }),
       areaOptions: t.contact.areas,
+      insightTopicTabs, insightCards,
+      setInsightTopic: this.setInsightTopic, openInsight: this.openInsight,
+      hasInsights: insightCards.length > 0, noInsights: insightCards.length === 0,
       careersValues,
 
       onHero, notOnHero: !onHero,
@@ -1211,7 +1303,7 @@ class Component extends DCLogic {
       f_area: this.state.form.area, f_message: this.state.form.message,
       onField: this.onField, submitForm: this.submitForm, sent: this.state.sent, notSent: !this.state.sent,
 
-      modalOpen: !!modal, modalIsService, modalIsTeam, modalIsText, md, closeModal: this.closeModal, stop: this.stop,
+      modalOpen: !!modal, modalIsService, modalIsTeam, modalIsText, modalIsInsight, md, closeModal: this.closeModal, stop: this.stop,
     };
   }
 }
