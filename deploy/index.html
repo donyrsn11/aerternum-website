@@ -608,6 +608,15 @@
               <div style="font-size:12px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#C0212F;margin-bottom:14px;">{{ md.role }}</div>
               <a href="{{ md.mailto }}" style="display:inline-block;font-size:14px;color:#46403B;text-decoration:none;font-weight:500;margin-bottom:28px;border-bottom:1px solid #DD3B49;padding-bottom:2px;" style-hover="color:#C0212F;">{{ md.email }}</a>
               <p style="font-family:'Source Serif 4',Georgia,serif;font-size:20px;line-height:1.6;color:#23211E;margin:0 0 34px;">{{ md.bio }}</p>
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:24px;letter-spacing:-.01em;color:#1E1714;margin:0 0 4px;">{{ t.team.eduLabel }}</div>
+              <ul style="list-style:none;padding:0;margin:14px 0 34px;border-top:1px solid #E2DBCE;">
+                <sc-for list="{{ md.edu }}" as="e" hint-placeholder-count="2">
+                  <li style="padding:16px 2px;border-bottom:1px solid #E2DBCE;display:flex;flex-direction:column;gap:1px;">
+                    <span style="font-size:14.5px;font-weight:400;line-height:1.45;color:#1E1714;">{{ e.degree }}</span>
+                    <span style="font-size:13.5px;line-height:1.45;color:#6B6259;">{{ e.school }}</span>
+                  </li>
+                </sc-for>
+              </ul>
               <div style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:24px;letter-spacing:-.01em;color:#1E1714;margin:0 0 4px;">{{ t.team.achLabel }}</div>
               <ul style="list-style:none;padding:0;margin:14px 0 0;border-top:1px solid #E2DBCE;">
                 <sc-for list="{{ md.ach }}" as="a" hint-placeholder-count="4">
@@ -816,7 +825,7 @@ class Component extends DCLogic {
       team: {
         kicker: 'The Teams', title: 'Excellence Through Teamwork',
         intro: 'Our team comprises lawyers with extensive experience across a wide range of legal fields. They understand how to implement the law to protect your business interest, and are exceptional at delivering tailored legal services that serve it.',
-        viewProfile: 'View profile', achLabel: 'Experiences & Achievements', photoHint: 'Click or drop a portrait photo',
+        viewProfile: 'View profile', eduLabel: 'Education', achLabel: 'Experiences & Achievements', photoHint: 'Click or drop a portrait photo',
       },
       clients: {
         kicker: 'Clients & Achievement', title: 'Our Clients',
@@ -905,7 +914,7 @@ class Component extends DCLogic {
       team: {
         kicker: 'Tim Kami', title: 'Keunggulan Lewat Kerja Sama',
         intro: 'Tim kami terdiri dari para advokat dengan pengalaman luas di beragam bidang hukum. Mereka memahami cara menerapkan hukum untuk melindungi kepentingan bisnis Anda, dan piawai memberikan layanan hukum yang dirancang khusus.',
-        viewProfile: 'Lihat profil', achLabel: 'Experiences & Achievements', photoHint: 'Klik atau letakkan foto potret',
+        viewProfile: 'Lihat profil', eduLabel: 'Pendidikan', achLabel: 'Experiences & Achievements', photoHint: 'Klik atau letakkan foto potret',
       },
       clients: {
         kicker: 'Klien & Pencapaian', title: 'Klien Kami',
@@ -997,23 +1006,23 @@ class Component extends DCLogic {
 
   TEAM = {
     en: [
-      {slug:'romero', initials:'RS', name:'Romero Seleky', role:'Partner', email:'romero.seleky@aerternum-legal.com',
+      {slug:'romero', edu:[{"degree":"Sarjana Hukum","school":"Universitas Katolik Indonesia Atma Jaya"}], edu:[{"degree":"Bachelor of Laws","school":"Atma Jaya Catholic University of Indonesia"}], initials:'RS', name:'Romero Seleky', role:'Partner', email:'romero.seleky@aerternum-legal.com',
         short:'Partner for corporate practices, with extensive experience in investment, M&A, competition, data, employment, and financing.',
         bio:'Romero is our partner for corporate practices, with extensive experience in investment, mergers and acquisitions, business competition, personal data, employment, and financing. Having worked for years at an international law firm, he has advised and represented numerous international clients looking to invest and do business in Indonesia.',
         ach:['Conducting research and preparing responses for a variety of Korean companies on general corporate matters, manpower, investment, anti-monopoly, intellectual property, and security.','Representing Korean-based corporations in business licensing applications and merger & acquisition filings.','Advising Korean-based corporations across general corporate, banking & finance, employment, personal data protection, competition law, and intellectual property issues.']},
-      {slug:'hendra', initials:'HH', name:'Hendra Hamim', role:'Partner', email:'hendra.hamim@aerternum-legal.com',
+      {slug:'hendra', edu:[{"degree":"Sarjana Hukum","school":"Universitas Katolik Indonesia Atma Jaya"}], edu:[{"degree":"Bachelor of Laws","school":"Atma Jaya Catholic University of Indonesia"}], initials:'HH', name:'Hendra Hamim', role:'Partner', email:'hendra.hamim@aerternum-legal.com',
         short:'Proven track record in corporate restructuring, employment disputes, and commercial litigation.',
         bio:'Hendra is a highly experienced partner with a proven track record in complex legal matters, particularly corporate restructuring, employment disputes, and commercial litigation. His meticulous approach to legal strategy underscores his commitment to effective client solutions.',
         ach:['Appointed as Legal Expert for the Ministry of Investment (BKPM) on strategic investment regulation projects for the 2023\u20132025 period.','Legal counsel for the plaintiff in a consumer protection dispute.','Represented clients in divorce proceedings and marital asset disputes before both the Religious Court and District Court.','Provided IPR representation covering trademarks and copyrights, both enforcement against infringement and strategic commercial protection.']},
-      {slug:'dony', initials:'DR', name:'Dony Renato', role:'Partner', email:'dony.renato@aerternum-legal.com',
+      {slug:'dony', edu:[{"degree":"Sarjana Hukum","school":"Universitas Katolik Indonesia Atma Jaya"},{"degree":"Magister Administrasi Bisnis (MBA)","school":"Institut Teknologi Bandung"}], edu:[{"degree":"Bachelor of Laws","school":"Atma Jaya Catholic University of Indonesia"},{"degree":"Master of Business Administration (MBA)","school":"Bandung Institute of Technology"}], initials:'DR', name:'Dony Renato', role:'Partner', email:'dony.renato@aerternum-legal.com',
         short:'Specialises in corporate and investment law, with particular strength in foreign investment and trade.',
         bio:'Dony is a dedicated partner specializing in corporate and investment law in Indonesia, with particular strength in foreign investment and trade. His expertise makes him a reliable partner for navigating Indonesia\u2019s complex regulatory framework.',
         ach:['2024, Second place, ASTRA Group Innovation 2024 (Legal Project).','2023, BIG 10 finalist, ASTRA Group Innovation 2023 (Legal Project).','Assisted a foreign air transportation representative office with the dismissal of its representative office in Indonesia.','Handled a master list application to the Indonesian Investment Coordinating Board (BKPM).','Handled Technical Considerations (PERTEK) and Import Permit for Iron & Steel (PI Besi & Baja) applications.','Prepared the annual general meeting of shareholders for several foreign investment companies in Indonesia.','Handled periodic Investment Activity Report (LKPM) compliance for foreign investment companies.','Assisted in making company regulations for various foreign companies as well as registering with the relevant institutions.']},
-      {slug:'kenny', initials:'KM', name:'Kenny Manurung', role:'Counsel', email:'kenny.manurung@aerternum-legal.com',
+      {slug:'kenny', edu:[{"degree":"Sarjana Hukum","school":"Universitas Katolik Indonesia Atma Jaya"}], edu:[{"degree":"Bachelor of Laws","school":"Atma Jaya Catholic University of Indonesia"}], initials:'KM', name:'Kenny Manurung', role:'Counsel', email:'kenny.manurung@aerternum-legal.com',
         short:'Counsel with experience in dispute resolution, bankruptcy, corporate law, and intellectual property.',
         bio:'Kenny is our counsel, with experience in dispute resolution, bankruptcy, and corporate law. He has been primarily entrusted by clients to provide litigation and intellectual property services, including trademark preliminary research and registration, preparing responses, and copyright registration.',
         ach:['2024, Nominated as Young Lawyer of the Year by Asian Legal Business (Finalist).','2024, Certified Mediator, The Indonesian Mediation Centre.','2023, Author of a HukumOnline legal article (Company Law & Peer-to-Peer Lending Law).','2023, Participant at a World Intellectual Property Organization event, Jakarta.','2022, Awarded Best Lawyer by Schnader Harrison Segal & Lewis LLP (Indonesia branch).']},
-      {slug:'mega', initials:'MB', name:'Mega Dini Bachri', role:'Counsel', email:'mega.bachri@aerternum-legal.com',
+      {slug:'mega', edu:[{"degree":"Magister Kenotariatan","school":"Universitas Diponegoro"},{"degree":"Sarjana Hukum","school":"Universitas Katolik Indonesia Atma Jaya"},{"degree":"Diploma Hubungan Masyarakat","school":"Management Development Institute of Singapore"}], edu:[{"degree":"Master of Notarial Law","school":"Diponegoro University"},{"degree":"Bachelor of Laws","school":"Atma Jaya Catholic University of Indonesia"},{"degree":"Diploma in Public Relations","school":"Management Development Institute of Singapore"}], initials:'MB', name:'Mega Dini Bachri', role:'Counsel', email:'mega.bachri@aerternum-legal.com',
         short:'Counsel focusing on corporate matters, governance, and financing documentation.',
         bio:'Mega is our counsel with a focus on corporate matters, supporting clients from the establishment of their business entities through to their day-to-day corporate governance. She regularly advises on corporate documentation, shareholder meetings, financing arrangements, and compliance requirements, helping clients keep their corporate structures orderly and well-documented as their business grows.',
         ach:['Advised companies on amendments to Articles of Association and corporate governance compliance.','Managed Annual General Meetings of Shareholders (AGMS) in accordance with Indonesian Company Law.','Drafted and reviewed commercial agreements, including credit and financing documentation.','Advised lenders and borrowers on security structures, including the registration and perfection of fiduciary security interests.','Supported corporate transactions and legal compliance related to capital market activities.','Advised corporate groups on shareholder arrangements, corporate restructuring, and internal approval requirements.']},
