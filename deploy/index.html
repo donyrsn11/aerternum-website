@@ -279,15 +279,24 @@
   </section>
   <section style="padding:76px 28px 104px;background:#F4F2EC;">
     <div style="max-width:1240px;margin:0 auto;">
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
-        <sc-for list="{{ team }}" as="p" hint-placeholder-count="3">
-          <div class="alp-photo-card" style="position:relative;border-radius:4px;overflow:hidden;aspect-ratio:3/4;background:#D9D2C6;">
-            <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="photo-{{ p.slug }}" shape="rect" fit="cover" placeholder="{{ t.team.photoHint }}" hint-size="100%,100%" style="position:absolute;inset:0;width:100%;height:100%;background:#D9D2C6;"></x-import>
-            <div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(to top, rgba(15,9,7,.94) 6%, rgba(15,9,7,.78) 30%, rgba(15,9,7,.32) 62%, transparent);pointer-events:none;"></div>
-            <div style="position:absolute;left:0;right:0;bottom:0;padding:26px 26px 24px;pointer-events:none;">
-              <h3 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:25px;letter-spacing:-.01em;margin:0 0 6px;color:#F7F3EC;text-shadow:0 1px 12px rgba(0,0,0,.35);">{{ p.name }}</h3>
-              <div style="font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#E26873;">{{ p.role }}</div>
-              <button onClick="{{ openTeam }}" data-index="{{ $index }}" style="pointer-events:auto;margin-top:18px;background:rgba(255,255,255,.1);border:1px solid rgba(247,243,236,.4);backdrop-filter:blur(4px);color:#F7F3EC;padding:9px 18px;border-radius:2px;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;letter-spacing:.02em;" style-hover="background:#DD3B49;border-color:#DD3B49;">{{ t.team.viewProfile }} →</button>
+      <div style="display:flex;flex-direction:column;gap:64px;">
+        <sc-for list="{{ teamGroups }}" as="g" hint-placeholder-count="2">
+          <div>
+            <div style="display:flex;align-items:center;gap:16px;margin:0 0 28px;">
+              <span style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:clamp(24px,3vw,34px);letter-spacing:-.01em;color:#1E1714;">{{ g.label }}</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(255px,300px));gap:20px;">
+              <sc-for list="{{ g.members }}" as="p" hint-placeholder-count="3">
+                <div class="alp-photo-card" style="position:relative;border-radius:4px;overflow:hidden;aspect-ratio:3/4;background:#D9D2C6;">
+                  <x-import component-from-global-scope="image-slot" from="./image-slot.js" id="photo-{{ p.slug }}" shape="rect" fit="cover" placeholder="{{ t.team.photoHint }}" hint-size="100%,100%" style="position:absolute;inset:0;width:100%;height:100%;background:#D9D2C6;"></x-import>
+                  <div style="position:absolute;left:0;right:0;bottom:0;height:62%;background:linear-gradient(to top, rgba(15,9,7,.94) 6%, rgba(15,9,7,.78) 30%, rgba(15,9,7,.32) 62%, transparent);pointer-events:none;"></div>
+                  <div style="position:absolute;left:0;right:0;bottom:0;padding:26px 26px 24px;pointer-events:none;">
+                    <h3 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:25px;letter-spacing:-.01em;margin:0 0 6px;color:#F7F3EC;text-shadow:0 1px 12px rgba(0,0,0,.35);">{{ p.name }}</h3>
+                    <div style="font-size:12px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:#E26873;">{{ p.role }}</div>
+                    <button onClick="{{ openTeam }}" data-index="{{ p.idx }}" style="pointer-events:auto;margin-top:18px;background:rgba(255,255,255,.1);border:1px solid rgba(247,243,236,.4);backdrop-filter:blur(4px);color:#F7F3EC;padding:9px 18px;border-radius:2px;cursor:pointer;font-family:inherit;font-size:12.5px;font-weight:600;letter-spacing:.02em;" style-hover="background:#DD3B49;border-color:#DD3B49;">{{ t.team.viewProfile }} →</button>
+                  </div>
+                </div>
+              </sc-for>
             </div>
           </div>
         </sc-for>
@@ -1203,6 +1212,11 @@ class Component extends DCLogic {
     ];
     const buildCareerIcon = (i, size) => R('svg', { width:size, height:size, viewBox:'0 0 24 24', fill:'none', stroke:'#DD3B49', strokeWidth:1.7, strokeLinecap:'round', strokeLinejoin:'round' }, (CAREER_ICON_PATHS[i]||[]).map((p,k)=>R(p.t,{key:k,...p.a})));
     const team = this.TEAM[lang];
+    const teamIndexed = team.map((p, i) => ({ ...p, idx: i }));
+    const teamGroups = [
+      { key:'Counsel', label: lang === 'id' ? 'Counsel' : 'Counsels', members: teamIndexed.filter(p => p.role !== 'Partner') },
+      { key:'Partner', label: lang === 'id' ? 'Partner' : 'Partners', members: teamIndexed.filter(p => p.role === 'Partner') },
+    ].filter(g => g.members.length);
     const page = this.state.page;
     const navOpen = this.state.navOpen;
     const heroVideoUrl = (this.props.heroVideoUrl || '').trim();
@@ -1291,7 +1305,7 @@ class Component extends DCLogic {
     return {
       t, lang, nav, navLeft, navRight, whyList,
       services: services.map((s,i) => ({ ...s, icon: buildIcon(i, 30) })),
-      team: team.map(p => ({ ...p })),
+      team: team.map(p => ({ ...p })), teamGroups,
       clientList: this.CLIENTS,
       clientCards: this.CLIENTS.map((name, i) => {
         const slug = 'client-' + name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
