@@ -102,11 +102,7 @@
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
       <span style="font-size:13px;font-weight:600;letter-spacing:.08em;">{{ t.search.label }}</span>
     </button>
-    <div class="alp-desktop-nav" style="display:flex;align-items:center;font-weight:700;font-size:13px;letter-spacing:.05em;">
-      <button onClick="{{ setEN }}" style="{{ enBtnStyle }}">EN</button>
-      <span style="{{ langSepStyle }}">/</span>
-      <button onClick="{{ setID }}" style="{{ idBtnStyle }}">ID</button>
-    </div>
+    <a href="/internal.html" data-internal-link="" class="alp-desktop-nav" style="{{ loginLinkStyle }}" style-hover="color:#DD3B49;">{{ t.footer.login }}</a>
     <button onClick="{{ toggleTalk }}" class="alp-cta-desktop alp-talkbtn" style="{{ talkBtnStyle }}">{{ t.navCta }}</button>
     <button onClick="{{ openSearch }}" class="alp-burger" style="{{ burgerStyle }}" aria-label="Search">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
@@ -523,6 +519,11 @@
       <div style="display:flex;gap:24px;">
         <button onClick="{{ openPrivacy }}" style="background:none;border:none;cursor:pointer;color:#AAA095;font-size:13px;font-family:inherit;" style-hover="color:#DD3B49;">{{ t.footer.privacy }}</button>
         <button onClick="{{ openDisclaimer }}" style="background:none;border:none;cursor:pointer;color:#AAA095;font-size:13px;font-family:inherit;" style-hover="color:#DD3B49;">{{ t.footer.disclaimer }}</button>
+        <div style="display:flex;align-items:center;gap:4px;font-weight:700;font-size:13px;letter-spacing:.05em;">
+          <button onClick="{{ setEN }}" style="{{ footEnStyle }}">EN</button>
+          <span style="color:#6B6259;">/</span>
+          <button onClick="{{ setID }}" style="{{ footIdStyle }}">ID</button>
+        </div>
       </div>
     </div>
   </div>
@@ -865,7 +866,7 @@ class Component extends DCLogic {
       closing: { title:'Achieve Lasting Success with a Dedicated Partnership.', text:'Reach out for an initial consultation, we\u2019ll help you understand your options and protect your business.', cta:'Get in Touch' },
       footer: {
         tagline:'Providing Accurate and Tailored Legal Services to Protect the Business of Our Clients.',
-        exploreLabel:'Explore', contactLabel:'Contact', privacy:'Privacy Policy', disclaimer:'Legal Disclaimer',
+        exploreLabel:'Explore', contactLabel:'Contact', privacy:'Privacy Policy', disclaimer:'Legal Disclaimer', login:'Lawyer Login',
         address:'Bellezza BSA, Jl. Letjen Soepeno, 1st Floor Unit 106, RT.4/RW.2, Grogol Utara, Kebayoran Lama, Jakarta Selatan, DKI Jakarta 12210',
         rights:'\u00A9 2026 Aerternum Legal Partnership. All rights reserved.',
       },
@@ -954,7 +955,7 @@ class Component extends DCLogic {
       closing: { title:'Raih keberhasilan jangka panjang lewat kemitraan yang berdedikasi.', text:'Hubungi kami untuk konsultasi awal, kami bantu Anda memahami pilihan dan melindungi bisnis Anda.', cta:'Hubungi Kami' },
       footer: {
         tagline:'Memberikan layanan hukum yang akurat dan dirancang khusus untuk melindungi bisnis klien kami.',
-        exploreLabel:'Jelajahi', contactLabel:'Kontak', privacy:'Kebijakan Privasi', disclaimer:'Penafian Hukum',
+        exploreLabel:'Jelajahi', contactLabel:'Kontak', privacy:'Kebijakan Privasi', disclaimer:'Penafian Hukum', login:'Login Lawyer',
         address:'Bellezza BSA, Jl. Letjen Soepeno, 1st Floor Unit 106, RT.4/RW.2, Grogol Utara, Kebayoran Lama, Jakarta Selatan, DKI Jakarta 12210',
         rights:'\u00A9 2026 Aerternum Legal Partnership. Hak cipta dilindungi.',
       },
@@ -1265,6 +1266,10 @@ class Component extends DCLogic {
     const baseBtn = 'background:none;border:none;cursor:pointer;padding:2px 5px;font:inherit;font-weight:700;transition:color .2s;color:';
     const enBtnStyle = baseBtn + (lang==='en' ? langActive : langIdle);
     const idBtnStyle = baseBtn + (lang==='id' ? langActive : langIdle);
+    const footBtn = 'background:none;border:none;cursor:pointer;padding:2px 4px;font:inherit;font-weight:700;transition:color .2s;color:';
+    const footEnStyle = footBtn + (lang==='en' ? '#F4F2EC' : '#AAA095');
+    const footIdStyle = footBtn + (lang==='id' ? '#F4F2EC' : '#AAA095');
+    const loginLinkStyle = 'text-decoration:none;font-weight:600;font-size:13px;letter-spacing:.05em;white-space:nowrap;transition:color .2s;color:' + langIdle;
 
     const searchBtnStyle = 'display:flex;align-items:center;gap:8px;background:none;border:none;cursor:pointer;font-family:inherit;color:'+navColor+';padding:4px;transition:color .2s;';
     const talkBtnStyle = 'background:'+(onHero ? '#DD3B49' : '#DD3B49')+';color:#F4F2EC;padding:12px 26px;border-radius:30px;font-weight:700;font-size:14px;border:none;cursor:pointer;font-family:inherit;letter-spacing:.02em;white-space:nowrap;transition:background .2s;';
@@ -1332,7 +1337,7 @@ class Component extends DCLogic {
       pageClients: page==='clients', pageNews: page==='news', pageCareers: page==='careers', pageContact: page==='contact',
       go: this.go, goContactFromModal: this.goContactFromModal,
 
-      headerStyle, logoSrc, navLinkStyle, ctaStyle, burgerStyle, langSepStyle, enBtnStyle, idBtnStyle,
+      headerStyle, logoSrc, navLinkStyle, ctaStyle, burgerStyle, langSepStyle, enBtnStyle, idBtnStyle, loginLinkStyle, footEnStyle, footIdStyle,
       searchBtnStyle, talkBtnStyle,
       navOpen, closeNav: this.closeNav, toggleNav: this.toggleNav, setEN: this.setEN, setID: this.setID,
       closeMenuMobile: this.closeMenuMobile,

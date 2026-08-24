@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html>
+<head><base href="/">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=Inter+Tight:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background:#EFECE4; font-family:'Inter Tight',system-ui,sans-serif; color:#1E1714; -webkit-font-smoothing:antialiased; }
+  a { color:#C0212F; text-decoration:none; }
+  a:hover { color:#9A1926; }
+  input, select { font-family:'Inter Tight',system-ui,sans-serif; }
+  input:focus, select:focus { outline:none; border-color:#1E1714 !important; }
+  ::selection { background:#C0212F; color:#fff; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;">
+
+<!-- ================= LOGIN ================= -->
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;background:#F4F2EC;">
+    <div style="width:420px;max-width:100%;">
+      <div style="text-align:center;margin-bottom:36px;">
+        <img src="assets/logo.png" alt="Aerternum Legal Partnership" style="height:84px;width:auto;" />
+        <div style="margin-top:18px;font-size:12px;font-weight:700;letter-spacing:.26em;text-transform:uppercase;color:#C0212F;">Internal System</div>
+      </div>
+      <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;padding:36px 34px;box-shadow:0 20px 50px rgba(30,23,20,.08);">
+        <div style="font-family:'Source Serif 4',Georgia,serif;font-size:24px;font-weight:600;margin-bottom:22px;">Sign in</div>
+        <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Email</label>
+        <input type="email" value="{{ email }}" onChange="{{ setEmail }}" placeholder="nama@aerternum-legal.com" style="width:100%;padding:12px 14px;border:1px solid #D8CFC0;border-radius:4px;font-size:15px;margin-bottom:16px;background:#FCFBF8;" />
+        <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Password</label>
+        <input type="password" value="{{ password }}" onChange="{{ setPassword }}" onKeyDown="{{ loginKey }}" placeholder="••••••••" style="width:100%;padding:12px 14px;border:1px solid #D8CFC0;border-radius:4px;font-size:15px;margin-bottom:8px;background:#FCFBF8;" />
+        <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
+          <div style="font-size:13px;color:#C0212F;margin:4px 0 6px;">{{ loginError }}</div>
+        </sc-if>
+        <button onClick="{{ doLogin }}" style="width:100%;margin-top:14px;background:#1E1714;color:#F4F2EC;border:none;border-radius:30px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;" style-hover="background:#C0212F;">Sign in</button>
+        <div style="margin-top:18px;font-size:12.5px;color:#8A8276;text-align:center;line-height:1.6;">Akses hanya untuk lawyer Aerternum.<br />Demo: dony.renato@aerternum-legal.com · aerternum2026</div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<!-- ================= APP SHELL ================= -->
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;min-height:100vh;">
+    <!-- Sidebar -->
+    <aside style="width:250px;flex-shrink:0;background:#1E1714;color:#F4F2EC;display:flex;flex-direction:column;padding:28px 0;">
+      <div style="padding:0 26px 26px;border-bottom:1px solid rgba(244,242,236,.12);">
+        <img src="assets/logo-white.png" alt="Aerternum" style="height:56px;width:auto;" />
+        <div style="margin-top:10px;font-size:10px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#DD3B49;">Internal System</div>
+      </div>
+      <nav style="display:flex;flex-direction:column;gap:2px;padding:20px 14px;flex:1;">
+        <sc-for list="{{ menu }}" as="m" hint-placeholder-count="3">
+          <button onClick="{{ goModule }}" data-mod="{{ m.key }}" style="{{ m.style }}">{{ m.label }}</button>
+        </sc-for>
+      </nav>
+      <div style="padding:18px 26px;border-top:1px solid rgba(244,242,236,.12);">
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div style="width:38px;height:38px;border-radius:50%;background:#C0212F;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;">DR</div>
+          <div style="min-width:0;">
+            <div style="font-size:13.5px;font-weight:600;">Dony Renato</div>
+            <div style="font-size:11.5px;color:#B8B0A2;">Partner</div>
+          </div>
+        </div>
+        <button onClick="{{ doLogout }}" style="margin-top:14px;width:100%;background:none;border:1px solid rgba(244,242,236,.25);color:#D6CEC4;border-radius:30px;padding:8px;font-size:12.5px;font-weight:600;cursor:pointer;" style-hover="border-color:#DD3B49;color:#fff;">Sign out</button>
+      </div>
+    </aside>
+
+    <!-- Main -->
+    <main style="flex:1;min-width:0;padding:40px 44px;">
+
+      <!-- ===== DASHBOARD ===== -->
+      <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
+        <div style="margin-bottom:30px;">
+          <h1 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:30px;letter-spacing:-.01em;">Dashboard</h1>
+          <div style="font-size:14px;color:#6B6259;margin-top:6px;">{{ today }}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:30px;">
+          <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
+            <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;padding:22px 24px;">
+              <div style="font-size:11.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8276;">{{ s.label }}</div>
+              <div style="font-family:'Source Serif 4',Georgia,serif;font-size:34px;font-weight:600;margin-top:10px;color:#1E1714;">{{ s.value }}</div>
+              <div style="font-size:12.5px;color:#6B6259;margin-top:6px;">{{ s.sub }}</div>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px;align-items:start;">
+          <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;padding:24px 26px;">
+            <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;margin-bottom:16px;">Proyek berjalan</div>
+            <sc-for list="{{ projects }}" as="p" hint-placeholder-count="4">
+              <div style="display:flex;align-items:center;justify-content:space-between;gap:14px;padding:13px 0;border-top:1px solid #EFE9DD;">
+                <div style="min-width:0;">
+                  <div style="font-size:14.5px;font-weight:600;">{{ p.name }}</div>
+                  <div style="font-size:12.5px;color:#8A8276;margin-top:2px;">{{ p.client }} · {{ p.area }}</div>
+                </div>
+                <span style="{{ p.badgeStyle }}">{{ p.status }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;padding:24px 26px;">
+            <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;margin-bottom:16px;">Tenggat kepatuhan terdekat</div>
+            <sc-for list="{{ deadlines }}" as="d" hint-placeholder-count="3">
+              <div style="padding:12px 0;border-top:1px solid #EFE9DD;">
+                <div style="display:flex;justify-content:space-between;gap:10px;">
+                  <div style="font-size:14px;font-weight:600;">{{ d.what }}</div>
+                  <div style="font-size:12.5px;font-weight:700;color:#C0212F;white-space:nowrap;">{{ d.due }}</div>
+                </div>
+                <div style="font-size:12.5px;color:#8A8276;margin-top:2px;">{{ d.client }}</div>
+              </div>
+            </sc-for>
+            <button onClick="{{ goCompliance }}" style="margin-top:16px;width:100%;background:none;border:1px solid #D8CFC0;border-radius:30px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;color:#1E1714;" style-hover="border-color:#1E1714;">Buka modul Kepatuhan</button>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ===== PERATURAN ===== -->
+      <sc-if value="{{ isRegs }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-bottom:26px;">
+          <h1 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:30px;letter-spacing:-.01em;">Peraturan</h1>
+          <div style="font-size:14px;color:#6B6259;margin-top:6px;">Pustaka peraturan internal — cari berdasarkan judul, nomor, atau bidang.</div>
+        </div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-bottom:20px;">
+          <input type="text" value="{{ regQuery }}" onChange="{{ setRegQuery }}" placeholder="Cari peraturan…" style="flex:1;min-width:220px;padding:12px 16px;border:1px solid #D8CFC0;border-radius:30px;font-size:14.5px;background:#fff;" />
+          <select value="{{ regTopic }}" onChange="{{ setRegTopic }}" style="padding:12px 18px;border:1px solid #D8CFC0;border-radius:30px;font-size:14px;background:#fff;cursor:pointer;">
+            <sc-for list="{{ regTopics }}" as="tp" hint-placeholder-count="5">
+              <option value="{{ tp }}">{{ tp }}</option>
+            </sc-for>
+          </select>
+        </div>
+        <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:180px minmax(0,1fr) 150px 110px;gap:14px;padding:14px 24px;background:#F4F2EC;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6259;">
+            <span>Nomor</span><span>Judul</span><span>Bidang</span><span>Status</span>
+          </div>
+          <sc-for list="{{ regs }}" as="r" hint-placeholder-count="6">
+            <div style="display:grid;grid-template-columns:180px minmax(0,1fr) 150px 110px;gap:14px;padding:16px 24px;border-top:1px solid #EFE9DD;align-items:center;">
+              <span style="font-size:13.5px;font-weight:600;">{{ r.num }}</span>
+              <span style="font-size:14px;line-height:1.5;">{{ r.title }}</span>
+              <span style="font-size:12.5px;color:#6B6259;">{{ r.topic }}</span>
+              <span style="{{ r.badgeStyle }}">{{ r.status }}</span>
+            </div>
+          </sc-for>
+          <sc-if value="{{ regsEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding:28px 24px;font-size:14px;color:#8A8276;">Tidak ada peraturan yang cocok dengan pencarian.</div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ===== KEPATUHAN ===== -->
+      <sc-if value="{{ isComp }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-bottom:26px;">
+          <h1 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:30px;letter-spacing:-.01em;">Kepatuhan</h1>
+          <div style="font-size:14px;color:#6B6259;margin-top:6px;">Pemantauan RUPS tahunan dan pelaporan LKPM per kuartal.</div>
+        </div>
+        <div style="display:inline-flex;border:1px solid #D8CFC0;border-radius:30px;overflow:hidden;margin-bottom:22px;background:#fff;">
+          <button onClick="{{ tabRups }}" style="{{ rupsTabStyle }}">RUPS</button>
+          <button onClick="{{ tabLkpm }}" style="{{ lkpmTabStyle }}">LKPM</button>
+        </div>
+
+        <sc-if value="{{ isRups }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 140px 170px 120px;gap:14px;padding:14px 24px;background:#F4F2EC;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6259;">
+              <span>Klien</span><span>Tahun buku</span><span>Batas RUPS</span><span>Status</span>
+            </div>
+            <sc-for list="{{ rups }}" as="r" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 140px 170px 120px;gap:14px;padding:16px 24px;border-top:1px solid #EFE9DD;align-items:center;">
+                <span style="font-size:14px;font-weight:600;">{{ r.client }}</span>
+                <span style="font-size:13.5px;color:#6B6259;">{{ r.fy }}</span>
+                <span style="font-size:13.5px;">{{ r.due }}</span>
+                <span style="{{ r.badgeStyle }}">{{ r.status }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:14px;font-size:12.5px;color:#8A8276;">RUPS tahunan wajib diselenggarakan paling lambat 6 bulan setelah tahun buku berakhir (UU PT).</div>
+        </sc-if>
+
+        <sc-if value="{{ isLkpm }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;overflow:hidden;">
+            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,110px);gap:12px;padding:14px 24px;background:#F4F2EC;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6259;">
+              <span>Klien (PMA)</span><span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span>
+            </div>
+            <sc-for list="{{ lkpm }}" as="l" hint-placeholder-count="5">
+              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,110px);gap:12px;padding:16px 24px;border-top:1px solid #EFE9DD;align-items:center;">
+                <span style="font-size:14px;font-weight:600;">{{ l.client }}</span>
+                <span style="{{ l.q1Style }}">{{ l.q1 }}</span>
+                <span style="{{ l.q2Style }}">{{ l.q2 }}</span>
+                <span style="{{ l.q3Style }}">{{ l.q3 }}</span>
+                <span style="{{ l.q4Style }}">{{ l.q4 }}</span>
+              </div>
+            </sc-for>
+          </div>
+          <div style="margin-top:14px;font-size:12.5px;color:#8A8276;">LKPM dilaporkan per kuartal melalui OSS: Q1 paling lambat 10 April, Q2 10 Juli, Q3 10 Oktober, Q4 10 Januari tahun berikutnya.</div>
+        </sc-if>
+      </sc-if>
+
+    </main>
+  </div>
+</sc-if>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = { view:'login', email:'', password:'', loginError:'', module:'dash', compTab:'rups', regQuery:'', regTopic:'Semua' };
+
+  ACCOUNTS = [{ email:'dony.renato@aerternum-legal.com', pass:'aerternum2026', name:'Dony Renato', role:'Partner' }];
+
+  REGS = [
+    { num:'Permenaker 7/2026', title:'Pekerjaan Alih Daya', topic:'Employment', year:2026, status:'Berlaku' },
+    { num:'UU 6/2023', title:'Penetapan Perppu Cipta Kerja menjadi Undang-Undang', topic:'Corporate Matters', year:2023, status:'Berlaku' },
+    { num:'PP 35/2021', title:'PKWT, Alih Daya, Waktu Kerja dan Waktu Istirahat, dan PHK', topic:'Employment', year:2021, status:'Berlaku' },
+    { num:'UU 40/2007', title:'Perseroan Terbatas', topic:'Corporate Matters', year:2007, status:'Berlaku' },
+    { num:'Peraturan BKPM 5/2021', title:'Pedoman dan Tata Cara Pengawasan Perizinan Berusaha Berbasis Risiko (LKPM)', topic:'Investment', year:2021, status:'Berlaku' },
+    { num:'UU 25/2007', title:'Penanaman Modal', topic:'Investment', year:2007, status:'Berlaku' },
+    { num:'POJK 42/2020', title:'Transaksi Afiliasi dan Benturan Kepentingan', topic:'Financing', year:2020, status:'Berlaku' },
+    { num:'UU 42/1999', title:'Jaminan Fidusia', topic:'Financing', year:1999, status:'Berlaku' },
+    { num:'UU 28/2014', title:'Hak Cipta', topic:'Intellectual Property', year:2014, status:'Berlaku' },
+    { num:'UU 20/2016', title:'Merek dan Indikasi Geografis', topic:'Intellectual Property', year:2016, status:'Berlaku' },
+    { num:'UU 30/1999', title:'Arbitrase dan Alternatif Penyelesaian Sengketa', topic:'Dispute Resolution', year:1999, status:'Berlaku' },
+    { num:'UU 27/2022', title:'Pelindungan Data Pribadi', topic:'Corporate Matters', year:2022, status:'Berlaku' },
+  ];
+
+  PROJECTS = [
+    { name:'Annual GMS 2025', client:'PT Privy Identitas Digital', area:'Corporate Matters', status:'Berjalan' },
+    { name:'Perjanjian Alih Daya — penyesuaian Permenaker 7/2026', client:'PT Basis Inovasi Global', area:'Employment', status:'Berjalan' },
+    { name:'Company Regulation — pendaftaran', client:'PT Koboi Nusantara Abadi', area:'Employment', status:'Review' },
+    { name:'Fasilitas kredit — dokumentasi fidusia', client:'PT Olahan Nusantara Abadi', area:'Financing', status:'Berjalan' },
+    { name:'LKPM Q2 2026', client:'PT Bumi Tekno Lestari', area:'Investment', status:'Selesai' },
+  ];
+
+  DEADLINES = [
+    { what:'LKPM Q3 2026', client:'Seluruh klien PMA', due:'10 Okt 2026' },
+    { what:'RUPS Tahunan (tahun buku 2025)', client:'PT Koboi Nusantara Abadi', due:'30 Jun 2026 — lewat, tindak lanjut' },
+    { what:'Laporan pendaftaran perjanjian alih daya', client:'PT Basis Inovasi Global', due:'3 hari kerja setelah TTD' },
+  ];
+
+  RUPS = [
+    { client:'PT Privy Identitas Digital', fy:'2025', due:'30 Juni 2026', status:'Selesai' },
+    { client:'PT Basis Inovasi Global', fy:'2025', due:'30 Juni 2026', status:'Selesai' },
+    { client:'PT Koboi Nusantara Abadi', fy:'2025', due:'30 Juni 2026', status:'Tertunda' },
+    { client:'PT Olahan Nusantara Abadi', fy:'2025', due:'30 Juni 2026', status:'Selesai' },
+    { client:'PT Bumi Tekno Lestari', fy:'2025', due:'30 Juni 2026', status:'Selesai' },
+  ];
+
+  LKPM = [
+    { client:'PT Privy Identitas Digital', q:['Lapor','Lapor','Jatuh tempo','—'] },
+    { client:'PT Basis Inovasi Global', q:['Lapor','Lapor','Jatuh tempo','—'] },
+    { client:'PT Koboi Nusantara Abadi', q:['Lapor','Terlambat','Jatuh tempo','—'] },
+    { client:'PT Olahan Nusantara Abadi', q:['Lapor','Lapor','Jatuh tempo','—'] },
+    { client:'PT Bumi Tekno Lestari', q:['Lapor','Lapor','Jatuh tempo','—'] },
+  ];
+
+  componentDidMount() {
+    try { if (localStorage.getItem('alp-internal-session') === 'dony') this.setState({ view:'app' }); } catch (e) {}
+  }
+
+  badge(kind) {
+    const base = 'display:inline-block;padding:5px 12px;border-radius:30px;font-size:11.5px;font-weight:700;text-align:center;';
+    if (kind === 'good') return base + 'background:#E8F0E4;color:#33691E;';
+    if (kind === 'warn') return base + 'background:#FDF3E2;color:#9A6A00;';
+    if (kind === 'bad')  return base + 'background:#FBEDEE;color:#C0212F;';
+    return base + 'background:#F1EEE7;color:#6B6259;';
+  }
+
+  renderVals() {
+    const { view, module, compTab, regQuery, regTopic } = this.state;
+    const isApp = view === 'app';
+
+    const menuDefs = [ { key:'dash', label:'Dashboard' }, { key:'regs', label:'Peraturan' }, { key:'comp', label:'Kepatuhan' } ];
+    const menu = menuDefs.map(m => ({ ...m,
+      style: 'text-align:left;border:none;cursor:pointer;border-radius:5px;padding:12px 14px;font-size:14.5px;font-weight:600;' +
+        (module === m.key ? 'background:#C0212F;color:#fff;' : 'background:none;color:#D6CEC4;') }));
+
+    const topics = ['Semua','Investment','Corporate Matters','Financing','Employment','Intellectual Property','Dispute Resolution'];
+    const q = regQuery.trim().toLowerCase();
+    const regs = this.REGS
+      .filter(r => regTopic === 'Semua' || r.topic === regTopic)
+      .filter(r => !q || (r.num + ' ' + r.title + ' ' + r.topic).toLowerCase().includes(q))
+      .map(r => ({ ...r, badgeStyle: this.badge('good') }));
+
+    const stMap = { 'Berjalan':'warn', 'Review':'neutral', 'Selesai':'good' };
+    const projects = this.PROJECTS.map(p => ({ ...p, badgeStyle: this.badge(stMap[p.status] || 'neutral') }));
+
+    const rups = this.RUPS.map(r => ({ ...r, badgeStyle: this.badge(r.status === 'Selesai' ? 'good' : 'bad') }));
+
+    const lq = s => s === 'Lapor' ? this.badge('good') : s === 'Terlambat' ? this.badge('bad') : s === 'Jatuh tempo' ? this.badge('warn') : this.badge('neutral');
+    const lkpm = this.LKPM.map(l => ({ client:l.client, q1:l.q[0], q2:l.q[1], q3:l.q[2], q4:l.q[3], q1Style:lq(l.q[0]), q2Style:lq(l.q[1]), q3Style:lq(l.q[2]), q4Style:lq(l.q[3]) }));
+
+    const tabBase = 'border:none;cursor:pointer;padding:11px 26px;font-size:13.5px;font-weight:700;';
+    const today = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+
+    return {
+      isLogin: view === 'login', isApp,
+      email: this.state.email, password: this.state.password, loginError: this.state.loginError,
+      setEmail: e => this.setState({ email: e.target.value }),
+      setPassword: e => this.setState({ password: e.target.value }),
+      loginKey: e => { if (e.key === 'Enter') this.login(); },
+      doLogin: () => this.login(),
+      doLogout: () => { try { localStorage.removeItem('alp-internal-session'); } catch (er) {} this.setState({ view:'login', password:'' }); },
+      menu,
+      goModule: e => this.setState({ module: e.currentTarget.dataset.mod }),
+      goCompliance: () => this.setState({ module:'comp' }),
+      isDash: isApp && module === 'dash', isRegs: isApp && module === 'regs', isComp: isApp && module === 'comp',
+      today,
+      stats: [
+        { label:'Klien aktif', value:'17', sub:'+2 kuartal ini' },
+        { label:'Proyek selesai', value:'46', sub:'sejak 2019' },
+        { label:'Fee diterima (YTD)', value:'Rp 2,4 M', sub:'per Agustus 2026' },
+        { label:'Proyek berjalan', value:'8', sub:'3 menunggu review' },
+      ],
+      projects, deadlines: this.DEADLINES,
+      regTopics: topics, regs, regsEmpty: regs.length === 0,
+      regQuery, setRegQuery: e => this.setState({ regQuery: e.target.value }),
+      regTopic, setRegTopic: e => this.setState({ regTopic: e.target.value }),
+      isRups: compTab === 'rups', isLkpm: compTab === 'lkpm',
+      tabRups: () => this.setState({ compTab:'rups' }),
+      tabLkpm: () => this.setState({ compTab:'lkpm' }),
+      rupsTabStyle: tabBase + (compTab === 'rups' ? 'background:#1E1714;color:#F4F2EC;' : 'background:none;color:#6B6259;'),
+      lkpmTabStyle: tabBase + (compTab === 'lkpm' ? 'background:#1E1714;color:#F4F2EC;' : 'background:none;color:#6B6259;'),
+      rups, lkpm,
+    };
+  }
+
+  login() {
+    const acc = this.ACCOUNTS.find(a => a.email === this.state.email.trim().toLowerCase() && a.pass === this.state.password);
+    if (!acc) { this.setState({ loginError:'Email atau password salah.' }); return; }
+    try { localStorage.setItem('alp-internal-session', 'dony'); } catch (e) {}
+    this.setState({ view:'app', loginError:'', module:'dash' });
+  }
+}
+
+</script>
+</body>
+</html>
