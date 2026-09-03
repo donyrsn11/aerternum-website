@@ -70,7 +70,8 @@
             <div style="font-size:11.5px;color:#B8B0A2;">{{ jabatanSaya }}</div>
           </div>
         </div>
-        <button onClick="{{ doLogout }}" style="margin-top:14px;width:100%;background:none;border:1px solid rgba(244,242,236,.25);color:#D6CEC4;border-radius:30px;padding:8px;font-size:12.5px;font-weight:600;cursor:pointer;" style-hover="border-color:#DD3B49;color:#fff;">Sign out</button>
+        <button onClick="{{ goAkun }}" style="margin-top:14px;width:100%;background:none;border:1px solid rgba(244,242,236,.25);color:#D6CEC4;border-radius:30px;padding:8px;font-size:12.5px;font-weight:600;cursor:pointer;" style-hover="border-color:#DD3B49;color:#fff;">Ganti password</button>
+        <button onClick="{{ doLogout }}" style="margin-top:8px;width:100%;background:none;border:1px solid rgba(244,242,236,.25);color:#D6CEC4;border-radius:30px;padding:8px;font-size:12.5px;font-weight:600;cursor:pointer;" style-hover="border-color:#DD3B49;color:#fff;">Sign out</button>
       </div>
     </aside>
 
@@ -237,6 +238,26 @@
         </sc-if>
       </sc-if>
 
+      <!-- ===== AKUN SAYA ===== -->
+      <sc-if value="{{ isAkun }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-bottom:26px;">
+          <h1 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:30px;letter-spacing:-.01em;">Akun saya</h1>
+          <div style="font-size:14px;color:#6B6259;margin-top:6px;">{{ namaSaya }} &middot; {{ emailSaya }}</div>
+        </div>
+        <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;padding:30px 32px;max-width:520px;">
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;margin-bottom:20px;">Ganti password</div>
+          <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Password sekarang</label>
+          <input type="password" value="{{ pLama }}" onChange="{{ setPLama }}" placeholder="&bull;&bull;&bull;&bull;&bull;&bull;&bull;&bull;" style="width:100%;padding:12px 14px;border:1px solid #D8CFC0;border-radius:4px;font-size:15px;margin-bottom:16px;background:#FCFBF8;" />
+          <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Password baru</label>
+          <input type="password" value="{{ pBaru }}" onChange="{{ setPBaru }}" placeholder="minimal 12 karakter" style="width:100%;padding:12px 14px;border:1px solid #D8CFC0;border-radius:4px;font-size:15px;margin-bottom:16px;background:#FCFBF8;" />
+          <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Ulangi password baru</label>
+          <input type="password" value="{{ pUlang }}" onChange="{{ setPUlang }}" onKeyDown="{{ passKey }}" placeholder="ketik ulang" style="width:100%;padding:12px 14px;border:1px solid #D8CFC0;border-radius:4px;font-size:15px;background:#FCFBF8;" />
+          <div style="{{ passPesanStyle }}">{{ passPesan }}</div>
+          <button onClick="{{ doGantiPassword }}" style="{{ gantiBtnStyle }}" style-hover="background:#C0212F;">{{ gantiBtnLabel }}</button>
+          <div style="margin-top:16px;font-size:12.5px;color:#8A8276;line-height:1.6;">Pilih password yang hanya Anda tahu dan tidak dipakai di layanan lain. Setelah diganti, password lama langsung tidak berlaku.</div>
+        </div>
+      </sc-if>
+
       <!-- ===== PENGGUNA ===== -->
       <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ false }}">
         <div style="margin-bottom:26px;">
@@ -312,6 +333,7 @@ class Component extends DCLogic {
     dokumen:[], dokPesan:'', dokPesanBuruk:false,
     daftarUser:[], fNama:'', fEmail:'', fJabatan:'', fKelola:false,
     sedangTambah:false, userPesan:'', userPesanBuruk:false, passBaru:'',
+    pLama:'', pBaru:'', pUlang:'', sedangGanti:false, passPesan:'', passPesanBuruk:false,
   };
 
   REGS = [
@@ -485,6 +507,9 @@ class Component extends DCLogic {
       goCompliance: () => this.setState({ module:'comp' }),
       isDash: isApp && module === 'dash', isRegs: isApp && module === 'regs', isComp: isApp && module === 'comp',
       isUsers: isApp && module === 'users' && !!(saya && saya.kelolaPengguna),
+      isAkun: isApp && module === 'akun',
+      goAkun: () => this.setState({ module:'akun', passPesan:'', pLama:'', pBaru:'', pUlang:'' }),
+      emailSaya: saya ? saya.email : '',
       today,
       stats: [
         { label:'Klien aktif', value:'17', sub:'+2 kuartal ini' },
@@ -535,6 +560,20 @@ class Component extends DCLogic {
       userPesanStyle: this.state.userPesan
         ? 'margin-top:16px;font-size:13px;font-weight:600;color:' + (this.state.userPesanBuruk ? '#C0212F' : '#33691E') + ';'
         : 'display:none;',
+      pLama: this.state.pLama, pBaru: this.state.pBaru, pUlang: this.state.pUlang,
+      setPLama: e => this.setState({ pLama: e.target.value }),
+      setPBaru: e => this.setState({ pBaru: e.target.value }),
+      setPUlang: e => this.setState({ pUlang: e.target.value }),
+      passKey: e => { if (e.key === 'Enter') this.gantiPassword(); },
+      doGantiPassword: () => this.gantiPassword(),
+      gantiBtnLabel: this.state.sedangGanti ? 'Menyimpan\u2026' : 'Simpan password baru',
+      gantiBtnStyle: 'width:100%;margin-top:18px;background:#1E1714;color:#F4F2EC;border:none;border-radius:30px;padding:13px;font-size:14.5px;font-weight:700;'
+        + (this.state.sedangGanti ? 'opacity:.6;cursor:default;' : 'cursor:pointer;'),
+      passPesan: this.state.passPesan,
+      passPesanStyle: this.state.passPesan
+        ? 'margin-top:14px;font-size:13px;font-weight:600;color:' + (this.state.passPesanBuruk ? '#C0212F' : '#33691E') + ';'
+        : 'display:none;',
+
       passBaru: this.state.passBaru,
       passBoxStyle: this.state.passBaru
         ? 'margin-top:14px;padding:18px 20px;background:#FDF8EE;border:1px solid #E8D9B8;border-radius:5px;'
@@ -606,6 +645,36 @@ class Component extends DCLogic {
     this.api('/api/documents?aksi=hapus&pathname=' + encodeURIComponent(pathname), { method:'POST' })
       .then(() => { this.setState({ dokPesan:'Dokumen dihapus.', dokPesanBuruk:false }); this.muatDokumen(); })
       .catch(e => this.setState({ dokPesan:'Gagal menghapus: ' + e.message, dokPesanBuruk:true }));
+  }
+
+  // ---------- password sendiri ----------
+
+  gantiPassword() {
+    if (this.state.sedangGanti) return;
+    const { pLama, pBaru, pUlang } = this.state;
+    if (!pLama || !pBaru) {
+      this.setState({ passPesan:'Password sekarang dan password baru wajib diisi.', passPesanBuruk:true });
+      return;
+    }
+    if (pBaru !== pUlang) {
+      this.setState({ passPesan:'Ulangan password baru tidak sama.', passPesanBuruk:true });
+      return;
+    }
+    if (pBaru.length < 12) {
+      this.setState({ passPesan:'Password baru minimal 12 karakter.', passPesanBuruk:true });
+      return;
+    }
+    this.setState({ sedangGanti:true, passPesan:'' });
+    this.api('/api/password', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ lama: pLama, baru: pBaru }),
+    })
+      .then(() => this.setState({
+        sedangGanti:false, pLama:'', pBaru:'', pUlang:'',
+        passPesan:'Password berhasil diganti. Pakai yang baru saat masuk berikutnya.', passPesanBuruk:false,
+      }))
+      .catch(e => this.setState({ sedangGanti:false, passPesan:e.message, passPesanBuruk:true }));
   }
 
   // ---------- pengguna ----------
