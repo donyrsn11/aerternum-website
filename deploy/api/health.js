@@ -6,8 +6,8 @@
 // "belum", supaya aman dibuka siapa pun yang kebetulan menemukannya.
 
 import { list } from '@vercel/blob';
+import { sesiSiap } from '../lib/auth.js';
 
-const PANJANG_SESSION_SECRET = 32;
 const PANJANG_ADMIN_PASSWORD = 12;
 
 export default async function handler(req, res) {
@@ -22,13 +22,16 @@ export default async function handler(req, res) {
       : cukup('ADMIN_PASSWORD', PANJANG_ADMIN_PASSWORD)
         ? 'sudah diisi'
         : `TERLALU PENDEK (minimal ${PANJANG_ADMIN_PASSWORD} karakter)`,
-    SESSION_SECRET: !ada('SESSION_SECRET')
-      ? 'BELUM ADA'
-      : cukup('SESSION_SECRET', PANJANG_SESSION_SECRET)
-        ? 'sudah diisi'
-        : `TERLALU PENDEK (minimal ${PANJANG_SESSION_SECRET} karakter)`,
     BLOB_READ_WRITE_TOKEN: ada('BLOB_READ_WRITE_TOKEN') ? 'sudah diisi' : 'BELUM ADA',
   };
+
+  // Penandatanganan sesi tidak lagi menuntut SESSION_SECRET sepanjang tertentu:
+  // kuncinya diturunkan dari bahan rahasia yang tersedia.
+  const sesi = !sesiSiap()
+    ? 'BELUM SIAP (isi SESSION_SECRET, atau sambungkan penyimpanan Blob)'
+    : ada('SESSION_SECRET')
+      ? 'siap (memakai SESSION_SECRET)'
+      : 'siap (diturunkan dari token penyimpanan)';
 
   // Uji sambungan ke penyimpanan, sekaligus melihat apakah akun sudah terbentuk.
   let penyimpanan = 'tidak diuji';
@@ -42,13 +45,15 @@ export default async function handler(req, res) {
   }
 
   const semuaBeres = Object.values(periksa).every(v => v === 'sudah diisi')
-    && penyimpanan === 'tersambung';
+    && penyimpanan === 'tersambung'
+    && sesi.startsWith('siap');
 
   const langkah = [];
   for (const [nama, hasil] of Object.entries(periksa)) {
     if (hasil !== 'sudah diisi') langkah.push(`Perbaiki variabel ${nama}: ${hasil.toLowerCase()}`);
   }
   if (penyimpanan.startsWith('GAGAL')) langkah.push('Penyimpanan Blob belum tersambung — periksa BLOB_READ_WRITE_TOKEN, lalu Redeploy');
+  if (!sesi.startsWith('siap')) langkah.push('Penandatanganan sesi belum siap — isi SESSION_SECRET atau sambungkan penyimpanan Blob');
   if (!langkah.length && !akunSudahDibuat) langkah.push('Konfigurasi lengkap. Akun dibuat otomatis saat login pertama.');
   if (!langkah.length && akunSudahDibuat) langkah.push('Konfigurasi lengkap dan akun sudah ada. Login seharusnya berhasil.');
 
@@ -56,6 +61,7 @@ export default async function handler(req, res) {
   return res.status(semuaBeres ? 200 : 503).json({
     siap: semuaBeres,
     variabel: periksa,
+    sesi,
     penyimpanan,
     akunSudahDibuat,
     langkahBerikutnya: langkah,

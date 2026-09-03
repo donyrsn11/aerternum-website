@@ -1,5 +1,5 @@
 // POST /api/login  { email, password }
-import { verifyPassword, buatSesi, cookieSesi, badan } from '../lib/auth.js';
+import { verifyPassword, buatSesi, cookieSesi, badan, sesiSiap } from '../lib/auth.js';
 import { daftarPengguna } from '../lib/penyimpanan.js';
 
 // Pesan yang menuntun ke halaman pemeriksaan, dipakai untuk kegagalan yang
@@ -11,7 +11,7 @@ export default async function handler(req, res) {
   try {
     // Diperiksa lebih dulu supaya kekurangan konfigurasi tidak muncul sebagai
     // "gangguan pada server" yang tidak menjelaskan apa-apa.
-    if (!process.env.SESSION_SECRET || process.env.SESSION_SECRET.length < 32) {
+    if (!sesiSiap()) {
       return res.status(503).json({ error: PESAN_KONFIGURASI });
     }
 

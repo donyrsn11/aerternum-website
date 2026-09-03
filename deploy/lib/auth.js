@@ -43,16 +43,50 @@ export function passwordAcak(panjang = 14) {
 
 // ---------- sesi ----------
 
-function rahasia() {
-  const s = process.env.SESSION_SECRET;
-  if (!s || s.length < 32) {
-    throw new Error('SESSION_SECRET belum diatur, atau kurang dari 32 karakter');
+// Kunci penanda tangan cookie sesi.
+//
+// Tidak memakai isi SESSION_SECRET mentah-mentah, melainkan menurunkannya
+// lewat HKDF. Dua keuntungannya:
+//
+//   1. SESSION_SECRET yang pendek tetap menghasilkan kunci 256 bit yang utuh,
+//      jadi salah ketik panjang tidak lagi membuat login mati total.
+//   2. Kalau SESSION_SECRET belum diisi sama sekali, kunci diturunkan dari
+//      BLOB_READ_WRITE_TOKEN — token penyimpanan yang panjang, acak, dan
+//      hanya ada di server. Jadi sistem tetap aman dan tetap jalan.
+//
+// Selama bahan bakunya tidak berubah, kunci yang dihasilkan selalu sama,
+// sehingga sesi yang sedang berjalan tidak putus di tengah jalan.
+function kunciSesi() {
+  const bahan = [
+    process.env.SESSION_SECRET || '',
+    process.env.BLOB_READ_WRITE_TOKEN || '',
+  ].join('|');
+
+  // Ambang ini hanya untuk menangkap keadaan "belum dikonfigurasi sama sekali".
+  // Token penyimpanan dari Vercel panjang dan acak, jadi dalam pemakaian normal
+  // syarat ini selalu terpenuhi bahkan bila SESSION_SECRET dikosongkan.
+  if (bahan.replace(/\|/g, '').length < 16) {
+    throw new Error(
+      'Tidak ada bahan rahasia yang cukup untuk menandatangani sesi. ' +
+      'Isi SESSION_SECRET, atau sambungkan penyimpanan Blob.'
+    );
   }
-  return s;
+
+  return Buffer.from(crypto.hkdfSync(
+    'sha256',
+    Buffer.from(bahan, 'utf8'),
+    Buffer.alloc(0),                        // tanpa salt: kunci harus selalu sama
+    Buffer.from('alp-sesi-internal-v1'),    // pemisah guna, supaya token tidak dipakai lintas keperluan
+    32,
+  ));
+}
+
+export function sesiSiap() {
+  try { kunciSesi(); return true; } catch (e) { return false; }
 }
 
 function tandaTangan(data) {
-  return crypto.createHmac('sha256', rahasia()).update(data).digest('base64url');
+  return crypto.createHmac('sha256', kunciSesi()).update(data).digest('base64url');
 }
 
 export function buatSesi(email) {
