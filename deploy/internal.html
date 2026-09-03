@@ -18,6 +18,8 @@
   a:hover { color:#9A1926; }
   input, select { font-family:'Inter Tight',system-ui,sans-serif; }
   input:focus, select:focus { outline:none; border-color:#1E1714 !important; }
+  .alp-cari::placeholder { color:#8A8276; }
+  .alp-cari:focus { border-color:rgba(244,242,236,.5) !important; background:rgba(244,242,236,.1); }
   ::selection { background:#C0212F; color:#fff; }
 </style>
 </helmet>
@@ -57,7 +59,18 @@
         <img src="assets/logo-white.png" alt="Aerternum" style="height:56px;width:auto;" />
         <div style="margin-top:10px;font-size:10px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#DD3B49;">Internal System</div>
       </div>
-      <nav style="display:flex;flex-direction:column;gap:2px;padding:20px 14px;flex:1;">
+      <div style="padding:18px 14px 4px;">
+        <div style="position:relative;">
+          <span style="position:absolute;left:13px;top:50%;transform:translateY(-50%);display:flex;color:#8A8276;pointer-events:none;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+          </span>
+          <input type="text" class="alp-cari" value="{{ klienQ }}" onChange="{{ setKlienQ }}" placeholder="Cari Perusahaan" style="width:100%;padding:9px 12px 9px 34px;border:1px solid rgba(244,242,236,.18);border-radius:30px;font-size:13px;background:rgba(244,242,236,.06);color:#F4F2EC;" />
+        </div>
+        <div style="{{ ringkasKlienStyle }}">{{ ringkasKlien }}</div>
+        <button onClick="{{ hapusKlienQ }}" style="{{ hapusKlienStyle }}" style-hover="color:#fff;border-color:rgba(244,242,236,.5);">Tampilkan semua</button>
+      </div>
+
+      <nav style="display:flex;flex-direction:column;gap:2px;padding:12px 14px 20px;flex:1;">
         <sc-for list="{{ menu }}" as="m" hint-placeholder-count="5">
           <button onClick="{{ goModule }}" data-mod="{{ m.mod }}" data-tab="{{ m.tab }}" style="{{ m.style }}">{{ m.label }}</button>
         </sc-for>
@@ -78,25 +91,13 @@
     <!-- Main -->
     <main style="flex:1;min-width:0;padding:40px 44px;">
 
-      <!-- ===== SARINGAN KLIEN (berlaku untuk semua modul) ===== -->
-      <sc-if value="{{ adaSaringanKlien }}" hint-placeholder-val="{{ true }}">
-        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:26px;padding-bottom:22px;border-bottom:1px solid #E4DCCB;">
-          <div style="position:relative;flex:1;min-width:260px;max-width:420px;">
-            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);display:flex;color:#A79E90;pointer-events:none;">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
-            </span>
-            <input type="text" value="{{ klienQ }}" onChange="{{ setKlienQ }}" placeholder="Cari klien &mdash; ketik sebagian nama" style="width:100%;padding:11px 14px 11px 38px;border:1px solid #D8CFC0;border-radius:30px;font-size:14px;background:#fff;" />
-          </div>
-          <button onClick="{{ hapusKlienQ }}" style="{{ hapusKlienStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Tampilkan semua klien</button>
-          <span style="{{ ringkasKlienStyle }}">{{ ringkasKlien }}</span>
-        </div>
-      </sc-if>
-
       <!-- ===== DASHBOARD ===== -->
       <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
         <div style="margin-bottom:30px;">
           <h1 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:30px;letter-spacing:-.01em;">Dashboard</h1>
-          <div style="font-size:14px;color:#6B6259;margin-top:6px;">{{ today }}</div>
+          <div style="font-size:14px;color:#6B6259;margin-top:6px;">
+            {{ today }} &middot; <span style="font-weight:600;color:#4A423A;font-variant-numeric:tabular-nums;">{{ jam }}</span>
+          </div>
         </div>
         <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:30px;">
           <sc-for list="{{ stats }}" as="s" hint-placeholder-count="4">
@@ -338,7 +339,7 @@ class Component extends DCLogic {
   // supaya layar login tidak sempat berkedip untuk pengguna yang sudah masuk.
   state = {
     view:'memuat', email:'', password:'', loginError:'', sedangLogin:false,
-    saya:null, module:'dash', compTab:'lkpm', regQuery:'', regTopic:'Semua', klienQ:'',
+    saya:null, module:'dash', compTab:'lkpm', regQuery:'', regTopic:'Semua', klienQ:'', sekarang: Date.now(),
     dokumen:[], dokPesan:'', dokPesanBuruk:false,
     daftarUser:[], fNama:'', fEmail:'', fJabatan:'', fKelola:false,
     sedangTambah:false, userPesan:'', userPesanBuruk:false, passBaru:'',
@@ -396,11 +397,18 @@ class Component extends DCLogic {
   ];
 
   componentDidMount() {
+    // Jam di Dashboard berdetak setiap detik.
+    this._jam = setInterval(() => this.setState({ sekarang: Date.now() }), 1000);
+
     // Yang menentukan sudah login atau belum adalah server, lewat cookie sesi
     // bertanda tangan. Tidak ada lagi penanda di browser yang bisa dipalsukan.
     this.api('/api/session')
       .then(d => { this.setState({ view:'app', saya:d.pengguna }); this.muatDokumen(); })
       .catch(() => this.setState({ view:'login' }));
+  }
+
+  componentWillUnmount() {
+    if (this._jam) clearInterval(this._jam);
   }
 
   // Satu pintu untuk semua panggilan ke server.
@@ -482,6 +490,9 @@ class Component extends DCLogic {
     const projects = this.PROJECTS.filter(p => cocok(p.client))
       .map(p => ({ ...p, badgeStyle: this.badge(stMap[p.status] || 'neutral') }));
 
+    // Kolom pencariannya ada di sidebar dan selalu terlihat, jadi seluruh
+    // daftar yang memuat perusahaan ikut disaring tanpa membuat baris
+    // menghilang tanpa keterangan.
     const rups = this.RUPS.filter(r => cocok(r.client))
       .map(r => ({ ...r, badgeStyle: this.badge(r.status === 'Selesai' ? 'good' : 'bad') }));
 
@@ -539,7 +550,9 @@ class Component extends DCLogic {
     ));
 
     const miniBtnStyle = 'border:1px solid #D8CFC0;background:#fff;color:#6B6259;border-radius:20px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;';
-    const today = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const kini = new Date(this.state.sekarang);
+    const today = kini.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    const jam = kini.toLocaleTimeString('id-ID', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
 
     return {
       isLogin: view === 'login', isApp,
@@ -580,17 +593,19 @@ class Component extends DCLogic {
       ],
       projects, deadlines: this.DEADLINES.filter(cocokTenggat),
 
-      // Bar pencarian hanya relevan di modul yang memang memuat daftar klien.
-      adaSaringanKlien: isApp && (module === 'dash' || module === 'comp'),
+      jam,
       klienQ,
       setKlienQ: e => this.setState({ klienQ: e.target.value }),
       hapusKlienQ: () => this.setState({ klienQ:'' }),
-      hapusKlienStyle: 'border:1px solid #D8CFC0;background:#fff;color:#6B6259;border-radius:30px;padding:10px 18px;font-size:13px;font-weight:600;white-space:nowrap;'
+      hapusKlienStyle: 'margin-top:8px;width:100%;background:none;border:1px solid rgba(244,242,236,.25);color:#D6CEC4;border-radius:30px;padding:7px;font-size:12px;font-weight:600;'
         + (kq ? 'cursor:pointer;' : 'display:none;'),
-      ringkasKlien: !kq
-        ? `Menampilkan seluruh ${totalKlien} klien`
-        : (klienCocok ? `${klienCocok} dari ${totalKlien} klien` : `Tidak ada klien yang cocok dengan \u201c${klienQ.trim()}\u201d`),
-      ringkasKlienStyle: 'font-size:13px;font-weight:600;color:' + (kq && !klienCocok ? '#C0212F' : '#8A8276') + ';',
+      // Ringkasan dan tombol hanya muncul saat sedang menyaring, supaya
+      // sidebar tetap bersih di keadaan biasa.
+      ringkasKlien: !kq ? ''
+        : (klienCocok ? `${klienCocok} dari ${totalKlien} perusahaan`
+                      : 'Tidak ada yang cocok'),
+      ringkasKlienStyle: !kq ? 'display:none;'
+        : 'margin:9px 4px 0;font-size:11.5px;font-weight:600;color:' + (klienCocok ? '#B8B0A2' : '#E8737F') + ';',
       regTopics: topics, regs, regsEmpty: regs.length === 0,
       regQuery, setRegQuery: e => this.setState({ regQuery: e.target.value }),
       regTopic, setRegTopic: e => this.setState({ regTopic: e.target.value }),
