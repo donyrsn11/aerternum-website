@@ -39,15 +39,15 @@ yang berubah, apa yang terlihat berbeda oleh pengunjung, dan apa yang bisa rusak
 
 ## Aturan mutlak
 
-Sembilan aturan ini tidak boleh dilanggar. Kalau sebuah permintaan bertentangan
+Delapan aturan ini tidak boleh dilanggar. Kalau sebuah permintaan bertentangan
 dengan salah satunya, hentikan dan tanyakan dulu.
 
 1. **Jangan pernah memformat ulang, merapikan, atau menjalankan
-   "beautify"/"prettier"/"format document" pada `index.html` dan `404.html`.**
-   Baris 3 di kedua file itu adalah satu baris sepanjang **297.891 karakter**
-   berisi 23 gambar WebP yang di-encode base64 (foto lawyer dan seluruh logo
-   klien). Memecah baris itu akan merusak semua gambar tersebut. Edit hanya
-   baris yang memang perlu diubah; jangan pernah menyentuh baris 3.
+   "beautify"/"prettier"/"format document" pada `index.html`.**
+   Baris 3 berkas itu adalah satu baris sepanjang **297.891 karakter** berisi
+   23 gambar WebP yang di-encode base64 (foto lawyer dan seluruh logo klien).
+   Memecah baris itu akan merusak semua gambar tersebut. Edit hanya baris yang
+   memang perlu diubah; jangan pernah menyentuh baris 3.
 
 2. **Bedakan file sumber dan file hasil build:**
    - **Sumber — boleh diedit:** `deploy/index.html`, `deploy/internal.html`,
@@ -64,30 +64,24 @@ dengan salah satunya, hentikan dan tanyakan dulu.
      327 (logo klien), dan 600 (foto tim di modal). Menghapusnya akan
      mengosongkan seluruh foto lawyer dan logo klien.
 
-3. **`index.html` dan `404.html` adalah dua file yang isinya identik persis.**
-   Kalau salah satu diedit, yang lain harus disalin agar tetap sama. Saat ini
-   `404.html` tidak pernah tampil (tertelan rewrite tangkap-semua di
-   `vercel.json`), tapi jangan biarkan keduanya berbeda diam-diam. Kalau ingin
-   `404.html` dihapus supaya tidak jadi jebakan, tanyakan dulu.
-
-4. **Jangan mengubah teks legal tanpa diminta eksplisit.** Nama perusahaan,
+3. **Jangan mengubah teks legal tanpa diminta eksplisit.** Nama perusahaan,
    alamat, nomor izin, syarat dan ketentuan, kebijakan privasi, disclaimer,
    dan seluruh isi artikel di `INSIGHTS` — semua ini punya konsekuensi hukum.
    Ubah hanya kalau diminta kata per kata, dan tunjukkan teks lama dan barunya
    berdampingan sebelum commit.
 
-5. **Satu permintaan, satu commit.** Pesan commit dalam bahasa Indonesia,
+4. **Satu permintaan, satu commit.** Pesan commit dalam bahasa Indonesia,
    jelaskan *apa yang berubah bagi pengunjung*, bukan nama file yang disentuh.
    Contoh baik: "Perbarui nomor telepon di halaman kontak".
 
-6. **Jangan menambah framework, library, atau dependensi baru tanpa bertanya.**
+5. **Jangan menambah framework, library, atau dependensi baru tanpa bertanya.**
    Sejak 3 September 2026 ada `deploy/package.json` dengan **satu** dependensi,
    `@vercel/blob`, dipakai oleh Internal System. Selain itu tidak ada apa pun —
    tidak ada React di sisi server, tidak ada bundler, tidak ada framework.
    Pertahankan begitu. Kode server memakai modul bawaan Node (`node:crypto`)
    untuk hash password dan tanda tangan sesi, dan itu memang disengaja.
 
-7. **Jangan commit rahasia.** API key, token, password, isi `.env` — tidak
+6. **Jangan commit rahasia.** API key, token, password, isi `.env` — tidak
    pernah masuk repo. Semua rahasia tinggal di Environment Variables milik
    Vercel dan dibaca lewat `process.env`.
    Kebocoran kredensial yang dulu ada di `internal.html` **sudah diperbaiki**
@@ -97,12 +91,12 @@ dengan salah satunya, hentikan dan tanyakan dulu.
    dalam berkas HTML, dan pemeriksaan password tidak boleh dilakukan di
    browser.
 
-8. **Jangan menyentuh konfigurasi deploy tanpa diminta.** `deploy/vercel.json`,
+7. **Jangan menyentuh konfigurasi deploy tanpa diminta.** `deploy/vercel.json`,
    pengaturan **Root Directory** di dashboard Vercel, domain, dan environment
    variable. Situs ini hanya tayang karena Root Directory di Vercel diset ke
    `deploy` — salah satu huruf di sini bisa membuat situs mati total.
 
-9. **Kalau ragu, tanya.** Menebak lalu push ke production lebih mahal daripada
+8. **Kalau ragu, tanya.** Menebak lalu push ke production lebih mahal daripada
    bertanya satu kalimat.
 
 ## Stack
@@ -111,7 +105,7 @@ Repo ini punya **dua bagian yang sangat berbeda**. Jangan mencampur keduanya.
 
 ### Bagian 1 — situs publik: statis, tanpa build
 
-`index.html`, `404.html`, `support.js`, `image-slot.js`, `assets/`. Vercel
+`index.html`, `support.js`, `image-slot.js`, `assets/`. Vercel
 hanya menyalinnya apa adanya. Tidak ada build, tidak ada Node yang berjalan.
 
 ### Bagian 2 — Internal System: fungsi server di Vercel
@@ -198,10 +192,8 @@ Fakta yang diverifikasi dari repositori:
   berada di dalam `deploy/` (bukan di root repo), pengaturan **Root Directory
   di dashboard Vercel pasti diset ke `deploy`** — kalau tidak, `vercel.json`
   tidak akan berlaku dan `index.html` tidak akan berada di akar situs.
-- **`Website sesuai dokumen.zip` di root repo tidak pernah ikut ter-deploy** —
-  file itu di luar Root Directory. Isinya salinan lama `deploy/` per commit
-  `a1a98e1`, sudah tertinggal 4 kali perubahan `index.html`, dan belum memuat
-  `internal.html`. Anggap sisa lama.
+- **Apa pun di luar `deploy/` tidak ikut ter-deploy**, termasuk `CLAUDE.md`.
+  Vercel hanya melihat isi Root Directory.
 
 Isi `deploy/vercel.json` selengkapnya:
 
@@ -218,10 +210,10 @@ Isi `deploy/vercel.json` selengkapnya:
 - `cleanUrls: true` → alamat ditulis `/contact`, bukan `/contact.html`.
 - Rewrite tangkap-semua → **semua** alamat menampilkan `index.html`, lalu
   JavaScript memutuskan halaman mana yang tampil. Inilah yang membuat
-  `/our-team` bisa dibuka langsung dan di-bookmark. Ini juga sebabnya
-  `404.html` tidak pernah tampil. File statis yang benar-benar ada
-  (`/assets/...`, `/robots.txt`, `/internal.html`) tetap dilayani lebih dulu
-  dan tidak tertelan rewrite ini.
+  `/our-team` bisa dibuka langsung dan di-bookmark. File statis yang
+  benar-benar ada (`/assets/...`, `/robots.txt`, `/internal.html`) tetap
+  dilayani lebih dulu dan tidak tertelan rewrite ini. Alamat di bawah `/api/`
+  yang tidak punya fungsi akan menghasilkan 404 bawaan Vercel.
 
 Soal branch:
 
@@ -280,9 +272,9 @@ lewati.
   source runtime-nya tidak ada di repo ini — memecahnya berarti menulis ulang
   seluruh situs.
 - Jangan menulis ulang riwayat Git (`filter-repo`, force-push) untuk
-  mengecilkan ukuran repo. Repo memang berat (~98 MB, `.git` 51 MB karena
-  menyimpan zip 23,6 MB dan `hero.mp4` 12,8 MB), tapi itu tidak mengganggu
-  Vercel sama sekali.
+  mengecilkan ukuran repo. Repo memang berat (~87M, `.git` 51M karena
+  riwayatnya masih menyimpan zip 23,6 MB yang sudah dihapus dan `hero.mp4`
+  12,8 MB), tapi itu tidak mengganggu Vercel sama sekali.
 - Jangan melaporkan pekerjaan selesai sebelum benar-benar ter-push dan
   deployment Vercel-nya berhasil.
 
@@ -291,27 +283,30 @@ lewati.
 Jangan perbaiki tanpa diminta — daftar ini hanya supaya tidak "ditemukan
 ulang" setiap sesi.
 
-1. **Domain tidak konsisten di `index.html`.** Domain resmi proyek ini adalah
-   **`aerternum-legal.com`** (pakai tanda hubung) — dipastikan dari dashboard
-   Vercel, terpasang berdampingan dengan `aerternumlegal.vercel.app`.
-   Sitemap, robots.txt, dan alamat email sudah memakai domain yang benar.
-   Yang salah adalah tag `canonical` dan `og:image` di `index.html`: keduanya
-   menunjuk `aerternumlegal.com` **tanpa** tanda hubung, domain yang tidak
-   terpasang. Merugikan SEO. Perbaikannya menyentuh `index.html` dan
-   `404.html` sekaligus (lihat Aturan 3).
-3. **`404.html` duplikat `index.html`** — 424 KB kembar yang harus dijaga
-   sinkron, padahal tidak pernah tampil (lihat Aturan 3).
-4. **`Website sesuai dokumen.zip`** (23,6 MB) di root adalah salinan lama yang
-   sudah tertinggal. Aman dihapus dari working tree, tapi menghapusnya tidak
-   mengecilkan `.git`.
-5. **Belum ada jalan keluar kalau pemegang hak kelola lupa password.** Akun
+1. **Belum ada jalan keluar kalau pemegang hak kelola lupa password.** Akun
    awal hanya dibuat sekali, saat daftar pengguna masih kosong; setelah itu
    mengubah `ADMIN_PASSWORD` tidak berpengaruh. Penawarnya bukan kode,
    melainkan kebiasaan: **harus selalu ada minimal dua akun dengan
    `kelolaPengguna`**, supaya bisa saling membuatkan password baru.
    Jalan darurat terakhir: hapus `system/users.json` lewat Manage Blobs di
    dashboard Vercel — tapi itu menghapus **seluruh** pengguna.
-6. **`LKPM_YEAR` di `internal.html` harus diganti manual setiap awal tahun.**
+2. **`LKPM_YEAR` di `internal.html` harus diganti manual setiap awal tahun.**
    Satu angka, dan seluruh tanggal jatuh tempo ikut menyesuaikan. Sengaja
    tidak dibuat mengikuti jam komputer, karena data status di tabel masih
    data tetap per tahun.
+3. **Repo tetap berat (~87M) meski `Website sesuai dokumen.zip` sudah
+   dihapus.** Berkas itu masih tersimpan di riwayat Git bersama `hero.mp4`
+   12,8 MB. Mengecilkannya berarti menulis ulang riwayat — jangan dilakukan
+   (lihat bagian "Yang harus dihindari"). Ukuran ini tidak mengganggu Vercel.
+
+## Yang sudah selesai
+
+Dicatat supaya tidak dikira masih jadi masalah.
+
+- **Kebocoran kredensial di `internal.html`** — diperbaiki pada `c463cf2`.
+  Login kini diperiksa di server.
+- **Domain tidak konsisten** — diperbaiki pada `b584e05`. Seluruh berkas kini
+  memakai `aerternum-legal.com`.
+- **`404.html` kembaran `index.html`** — berkasnya dihapus, jadi tidak ada
+  lagi dua berkas 424 KB yang harus dijaga tetap sinkron.
+- **`Website sesuai dokumen.zip`** — dihapus dari working tree.
