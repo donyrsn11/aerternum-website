@@ -58,8 +58,8 @@
         <div style="margin-top:10px;font-size:10px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#DD3B49;">Internal System</div>
       </div>
       <nav style="display:flex;flex-direction:column;gap:2px;padding:20px 14px;flex:1;">
-        <sc-for list="{{ menu }}" as="m" hint-placeholder-count="3">
-          <button onClick="{{ goModule }}" data-mod="{{ m.key }}" style="{{ m.style }}">{{ m.label }}</button>
+        <sc-for list="{{ menu }}" as="m" hint-placeholder-count="5">
+          <button onClick="{{ goModule }}" data-mod="{{ m.mod }}" data-tab="{{ m.tab }}" style="{{ m.style }}">{{ m.label }}</button>
         </sc-for>
       </nav>
       <div style="padding:18px 26px;border-top:1px solid rgba(244,242,236,.12);">
@@ -160,11 +160,6 @@
           <h1 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:30px;letter-spacing:-.01em;">Kepatuhan</h1>
           <div style="font-size:14px;color:#6B6259;margin-top:6px;">Pemantauan RUPS tahunan dan pelaporan LKPM per kuartal.</div>
         </div>
-        <div style="display:inline-flex;border:1px solid #D8CFC0;border-radius:30px;overflow:hidden;margin-bottom:22px;background:#fff;">
-          <button onClick="{{ tabRups }}" style="{{ rupsTabStyle }}">RUPS</button>
-          <button onClick="{{ tabLkpm }}" style="{{ lkpmTabStyle }}">LKPM</button>
-        </div>
-
         <sc-if value="{{ isRups }}" hint-placeholder-val="{{ true }}">
           <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;overflow:hidden;">
             <div style="display:grid;grid-template-columns:minmax(0,1.3fr) 140px 170px 120px;gap:14px;padding:14px 24px;background:#F4F2EC;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6259;">
@@ -420,13 +415,29 @@ class Component extends DCLogic {
     const { view, module, compTab, regQuery, regTopic, saya } = this.state;
     const isApp = view === 'app';
 
+    // Kepatuhan punya dua isi, RUPS dan LKPM. Saat modulnya sedang dibuka,
+    // keduanya muncul sebagai anak menu di bawahnya supaya bisa dituju
+    // langsung dari sidebar, tanpa harus masuk dulu lalu berpindah tab.
+    const compTerbuka = module === 'comp';
+    const menuDefs = [
+      { key:'dash', label:'Dashboard', mod:'dash', tab:'' },
+      { key:'regs', label:'Peraturan', mod:'regs', tab:'' },
+      { key:'comp', label:'Kepatuhan ' + (compTerbuka ? '\u25be' : '\u25b8'), mod:'comp', tab:'' },
+    ];
+    if (compTerbuka) {
+      menuDefs.push({ key:'comp-rups', label:'RUPS', mod:'comp', tab:'rups', anak:true });
+      menuDefs.push({ key:'comp-lkpm', label:'LKPM', mod:'comp', tab:'lkpm', anak:true });
+    }
     // Menu "Pengguna" hanya muncul untuk akun yang memang berhak mengelola.
     // Penanda ini tidak pernah ditampilkan sebagai jabatan di layar mana pun.
-    const menuDefs = [ { key:'dash', label:'Dashboard' }, { key:'regs', label:'Peraturan' }, { key:'comp', label:'Kepatuhan' } ];
-    if (saya && saya.kelolaPengguna) menuDefs.push({ key:'users', label:'Pengguna' });
-    const menu = menuDefs.map(m => ({ ...m,
-      style: 'text-align:left;border:none;cursor:pointer;border-radius:5px;padding:12px 14px;font-size:14.5px;font-weight:600;' +
-        (module === m.key ? 'background:#C0212F;color:#fff;' : 'background:none;color:#D6CEC4;') }));
+    if (saya && saya.kelolaPengguna) menuDefs.push({ key:'users', label:'Pengguna', mod:'users', tab:'' });
+
+    const dasarMenu = 'text-align:left;border:none;cursor:pointer;border-radius:5px;font-weight:600;';
+    const menu = menuDefs.map(m => ({ ...m, style: m.anak
+      ? dasarMenu + 'padding:9px 14px 9px 32px;font-size:13px;'
+          + (compTab === m.tab ? 'background:rgba(221,59,73,.26);color:#fff;' : 'background:none;color:#A79E90;')
+      : dasarMenu + 'padding:12px 14px;font-size:14.5px;'
+          + (module === m.key ? 'background:#C0212F;color:#fff;' : 'background:none;color:#D6CEC4;') }));
 
     const topics = ['Semua','Investment','Corporate Matters','Financing','Employment','Intellectual Property','Dispute Resolution'];
     const q = regQuery.trim().toLowerCase();
@@ -494,7 +505,6 @@ class Component extends DCLogic {
     ));
 
     const miniBtnStyle = 'border:1px solid #D8CFC0;background:#fff;color:#6B6259;border-radius:20px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;';
-    const tabBase = 'border:none;cursor:pointer;padding:11px 26px;font-size:13.5px;font-weight:700;';
     const today = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
     return {
@@ -515,8 +525,10 @@ class Component extends DCLogic {
 
       menu,
       goModule: e => {
-        const mod = e.currentTarget.dataset.mod;
-        this.setState({ module: mod, userPesan:'', passBaru:'' });
+        const { mod, tab } = e.currentTarget.dataset;
+        const patch = { module: mod, userPesan:'', passBaru:'' };
+        if (tab) patch.compTab = tab;   // hanya anak menu yang membawa tab
+        this.setState(patch);
         if (mod === 'users') this.muatPengguna();
       },
       goCompliance: () => this.setState({ module:'comp' }),
@@ -536,11 +548,8 @@ class Component extends DCLogic {
       regTopics: topics, regs, regsEmpty: regs.length === 0,
       regQuery, setRegQuery: e => this.setState({ regQuery: e.target.value }),
       regTopic, setRegTopic: e => this.setState({ regTopic: e.target.value }),
+      // Pemilihan RUPS/LKPM sepenuhnya lewat anak menu di sidebar.
       isRups: compTab === 'rups', isLkpm: compTab === 'lkpm',
-      tabRups: () => this.setState({ compTab:'rups' }),
-      tabLkpm: () => this.setState({ compTab:'lkpm' }),
-      rupsTabStyle: tabBase + (compTab === 'rups' ? 'background:#1E1714;color:#F4F2EC;' : 'background:none;color:#6B6259;'),
-      lkpmTabStyle: tabBase + (compTab === 'lkpm' ? 'background:#1E1714;color:#F4F2EC;' : 'background:none;color:#6B6259;'),
       rups, lkpm,
       lkpmPeriod1, lkpmPeriod2, lkpmPeriod3, lkpmPeriod4, lkpmPeriodStyle,
       lkpmDue1, lkpmDue2, lkpmDue3, lkpmDue4, lkpmDueStyle,
