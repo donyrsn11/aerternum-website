@@ -41,8 +41,8 @@
         <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
           <div style="font-size:13px;color:#C0212F;margin:4px 0 6px;">{{ loginError }}</div>
         </sc-if>
-        <button onClick="{{ doLogin }}" style="width:100%;margin-top:14px;background:#1E1714;color:#F4F2EC;border:none;border-radius:30px;padding:14px;font-size:15px;font-weight:700;cursor:pointer;" style-hover="background:#C0212F;">Sign in</button>
-        <div style="margin-top:18px;font-size:12.5px;color:#8A8276;text-align:center;line-height:1.6;">Akses hanya untuk lawyer Aerternum.<br />Demo: dony.renato@aerternum-legal.com · aerternum2026</div>
+        <button onClick="{{ doLogin }}" style="{{ loginBtnStyle }}" style-hover="background:#C0212F;">{{ loginBtnLabel }}</button>
+        <div style="margin-top:18px;font-size:12.5px;color:#8A8276;text-align:center;line-height:1.6;">Akses hanya untuk lawyer Aerternum.</div>
       </div>
     </div>
   </div>
@@ -64,10 +64,10 @@
       </nav>
       <div style="padding:18px 26px;border-top:1px solid rgba(244,242,236,.12);">
         <div style="display:flex;align-items:center;gap:12px;">
-          <div style="width:38px;height:38px;border-radius:50%;background:#C0212F;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;">DR</div>
+          <div style="width:38px;height:38px;border-radius:50%;background:#C0212F;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;">{{ inisial }}</div>
           <div style="min-width:0;">
-            <div style="font-size:13.5px;font-weight:600;">Dony Renato</div>
-            <div style="font-size:11.5px;color:#B8B0A2;">Partner</div>
+            <div style="font-size:13.5px;font-weight:600;">{{ namaSaya }}</div>
+            <div style="font-size:11.5px;color:#B8B0A2;">{{ jabatanSaya }}</div>
           </div>
         </div>
         <button onClick="{{ doLogout }}" style="margin-top:14px;width:100%;background:none;border:1px solid rgba(244,242,236,.25);color:#D6CEC4;border-radius:30px;padding:8px;font-size:12.5px;font-weight:600;cursor:pointer;" style-hover="border-color:#DD3B49;color:#fff;">Sign out</button>
@@ -183,7 +183,7 @@
 
         <sc-if value="{{ isLkpm }}" hint-placeholder-val="{{ false }}">
           <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;overflow:hidden;">
-            <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,110px);gap:12px;padding:14px 24px;background:#F4F2EC;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6259;">
+            <div style="display:grid;grid-template-columns:minmax(0,1.15fr) repeat(4,152px);gap:12px;padding:14px 24px;background:#F4F2EC;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6259;">
               <span>Klien (PMA)</span>
               <span style="text-align:center;">Q1<span style="{{ lkpmPeriodStyle }}">{{ lkpmPeriod1 }}</span><span style="{{ lkpmDueStyle }}">{{ lkpmDue1 }}</span></span>
               <span style="text-align:center;">Q2<span style="{{ lkpmPeriodStyle }}">{{ lkpmPeriod2 }}</span><span style="{{ lkpmDueStyle }}">{{ lkpmDue2 }}</span></span>
@@ -191,17 +191,107 @@
               <span style="text-align:center;">Q4<span style="{{ lkpmPeriodStyle }}">{{ lkpmPeriod4 }}</span><span style="{{ lkpmDueStyle }}">{{ lkpmDue4 }}</span></span>
             </div>
             <sc-for list="{{ lkpm }}" as="l" hint-placeholder-count="5">
-              <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,110px);gap:12px;padding:16px 24px;border-top:1px solid #EFE9DD;align-items:center;">
-                <span style="font-size:14px;font-weight:600;">{{ l.client }}</span>
-                <span style="{{ l.q1Style }}">{{ l.q1 }}</span>
-                <span style="{{ l.q2Style }}">{{ l.q2 }}</span>
-                <span style="{{ l.q3Style }}">{{ l.q3 }}</span>
-                <span style="{{ l.q4Style }}">{{ l.q4 }}</span>
+              <div style="display:grid;grid-template-columns:minmax(0,1.15fr) repeat(4,152px);gap:12px;padding:16px 24px;border-top:1px solid #EFE9DD;align-items:start;">
+                <span style="font-size:14px;font-weight:600;padding-top:5px;">{{ l.client }}</span>
+                <span style="display:block;text-align:center;">
+                  <span style="{{ l.q1Style }}">{{ l.q1 }}</span>
+                  <span style="{{ l.q1FileStyle }}" title="{{ l.q1File }}">{{ l.q1File }}</span>
+                  <span style="display:flex;gap:6px;justify-content:center;margin-top:7px;">
+                    <button onClick="{{ pilihBerkas }}" data-klien="{{ l.client }}" data-kuartal="Q1" style="{{ unggahBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Unggah</button>
+                    <button onClick="{{ unduhBerkas }}" data-path="{{ l.q1Path }}" style="{{ l.q1AksiStyle }}" style-hover="background:#33691E;">Unduh</button>
+                    <button onClick="{{ hapusBerkas }}" data-path="{{ l.q1Path }}" style="{{ l.q1HapusStyle }}" style-hover="color:#C0212F;">&#215;</button>
+                  </span>
+                </span>
+                <span style="display:block;text-align:center;">
+                  <span style="{{ l.q2Style }}">{{ l.q2 }}</span>
+                  <span style="{{ l.q2FileStyle }}" title="{{ l.q2File }}">{{ l.q2File }}</span>
+                  <span style="display:flex;gap:6px;justify-content:center;margin-top:7px;">
+                    <button onClick="{{ pilihBerkas }}" data-klien="{{ l.client }}" data-kuartal="Q2" style="{{ unggahBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Unggah</button>
+                    <button onClick="{{ unduhBerkas }}" data-path="{{ l.q2Path }}" style="{{ l.q2AksiStyle }}" style-hover="background:#33691E;">Unduh</button>
+                    <button onClick="{{ hapusBerkas }}" data-path="{{ l.q2Path }}" style="{{ l.q2HapusStyle }}" style-hover="color:#C0212F;">&#215;</button>
+                  </span>
+                </span>
+                <span style="display:block;text-align:center;">
+                  <span style="{{ l.q3Style }}">{{ l.q3 }}</span>
+                  <span style="{{ l.q3FileStyle }}" title="{{ l.q3File }}">{{ l.q3File }}</span>
+                  <span style="display:flex;gap:6px;justify-content:center;margin-top:7px;">
+                    <button onClick="{{ pilihBerkas }}" data-klien="{{ l.client }}" data-kuartal="Q3" style="{{ unggahBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Unggah</button>
+                    <button onClick="{{ unduhBerkas }}" data-path="{{ l.q3Path }}" style="{{ l.q3AksiStyle }}" style-hover="background:#33691E;">Unduh</button>
+                    <button onClick="{{ hapusBerkas }}" data-path="{{ l.q3Path }}" style="{{ l.q3HapusStyle }}" style-hover="color:#C0212F;">&#215;</button>
+                  </span>
+                </span>
+                <span style="display:block;text-align:center;">
+                  <span style="{{ l.q4Style }}">{{ l.q4 }}</span>
+                  <span style="{{ l.q4FileStyle }}" title="{{ l.q4File }}">{{ l.q4File }}</span>
+                  <span style="display:flex;gap:6px;justify-content:center;margin-top:7px;">
+                    <button onClick="{{ pilihBerkas }}" data-klien="{{ l.client }}" data-kuartal="Q4" style="{{ unggahBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Unggah</button>
+                    <button onClick="{{ unduhBerkas }}" data-path="{{ l.q4Path }}" style="{{ l.q4AksiStyle }}" style-hover="background:#33691E;">Unduh</button>
+                    <button onClick="{{ hapusBerkas }}" data-path="{{ l.q4Path }}" style="{{ l.q4HapusStyle }}" style-hover="color:#C0212F;">&#215;</button>
+                  </span>
+                </span>
               </div>
             </sc-for>
           </div>
-          <div style="margin-top:14px;font-size:12.5px;color:#8A8276;">LKPM dilaporkan per kuartal melalui OSS: Q1 paling lambat 10 April, Q2 10 Juli, Q3 10 Oktober, Q4 10 Januari tahun berikutnya.</div>
+          <div style="{{ dokPesanStyle }}">{{ dokPesan }}</div>
+          <div style="margin-top:14px;font-size:12.5px;color:#8A8276;">LKPM dilaporkan per kuartal melalui OSS: Q1 paling lambat 10 April, Q2 10 Juli, Q3 10 Oktober, Q4 10 Januari tahun berikutnya. Dokumen yang diunggah tersimpan tertutup dan hanya bisa diunduh setelah login.</div>
         </sc-if>
+      </sc-if>
+
+      <!-- ===== PENGGUNA ===== -->
+      <sc-if value="{{ isUsers }}" hint-placeholder-val="{{ false }}">
+        <div style="margin-bottom:26px;">
+          <h1 style="font-family:'Source Serif 4',Georgia,serif;font-weight:600;font-size:30px;letter-spacing:-.01em;">Pengguna</h1>
+          <div style="font-size:14px;color:#6B6259;margin-top:6px;">Kelola siapa saja yang bisa masuk ke Internal System.</div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;padding:24px 26px;margin-bottom:20px;">
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;margin-bottom:18px;">Tambah pengguna</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;align-items:end;">
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Nama</label>
+              <input value="{{ fNama }}" onChange="{{ setFNama }}" placeholder="Nama lengkap" style="width:100%;padding:11px 13px;border:1px solid #D8CFC0;border-radius:4px;font-size:14.5px;background:#FCFBF8;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Email</label>
+              <input type="email" value="{{ fEmail }}" onChange="{{ setFEmail }}" placeholder="nama@aerternum-legal.com" style="width:100%;padding:11px 13px;border:1px solid #D8CFC0;border-radius:4px;font-size:14.5px;background:#FCFBF8;" />
+            </div>
+            <div>
+              <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Jabatan</label>
+              <input value="{{ fJabatan }}" onChange="{{ setFJabatan }}" placeholder="Associate" style="width:100%;padding:11px 13px;border:1px solid #D8CFC0;border-radius:4px;font-size:14.5px;background:#FCFBF8;" />
+            </div>
+            <div>
+              <button onClick="{{ doTambahPengguna }}" style="{{ tambahBtnStyle }}" style-hover="background:#C0212F;">{{ tambahBtnLabel }}</button>
+            </div>
+          </div>
+          <label style="display:flex;align-items:center;gap:9px;margin-top:16px;font-size:13.5px;color:#4A423A;cursor:pointer;">
+            <input type="checkbox" checked="{{ fKelola }}" onChange="{{ setFKelola }}" style="width:16px;height:16px;cursor:pointer;" />
+            Boleh mengelola pengguna lain
+          </label>
+          <div style="{{ userPesanStyle }}">{{ userPesan }}</div>
+          <div style="{{ passBoxStyle }}">
+            <div style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#9A6A00;margin-bottom:8px;">Password sementara &mdash; hanya ditampilkan sekali</div>
+            <div style="font-family:ui-monospace,Menlo,Consolas,monospace;font-size:18px;font-weight:700;color:#1E1714;letter-spacing:.04em;">{{ passBaru }}</div>
+            <div style="font-size:12.5px;color:#6B6259;margin-top:8px;line-height:1.6;">Catat sekarang dan sampaikan langsung ke yang bersangkutan. Setelah halaman ini berpindah, password tidak bisa dilihat lagi &mdash; hanya bisa dibuatkan yang baru.</div>
+          </div>
+        </div>
+
+        <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;overflow:hidden;">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) 150px 190px;gap:14px;padding:14px 24px;background:#F4F2EC;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6259;">
+            <span>Nama</span><span>Email</span><span>Jabatan</span><span></span>
+          </div>
+          <sc-for list="{{ daftarUser }}" as="u" hint-placeholder-count="2">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) 150px 190px;gap:14px;padding:15px 24px;border-top:1px solid #EFE9DD;align-items:center;">
+              <span style="font-size:14px;font-weight:600;">{{ u.nama }}</span>
+              <span style="font-size:13.5px;color:#6B6259;word-break:break-all;">{{ u.email }}</span>
+              <span style="font-size:13.5px;">{{ u.jabatan }}</span>
+              <span style="display:flex;gap:8px;justify-content:flex-end;">
+                <button onClick="{{ doResetPassword }}" data-email="{{ u.email }}" style="{{ miniBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Password baru</button>
+                <button onClick="{{ doHapusPengguna }}" data-email="{{ u.email }}" style="{{ u.hapusStyle }}" style-hover="color:#C0212F;border-color:#C0212F;">Hapus</button>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="margin-top:14px;font-size:12.5px;color:#8A8276;">Password tidak pernah disimpan dalam bentuk aslinya, jadi tidak bisa dilihat kembali oleh siapa pun. Kalau ada yang lupa, buatkan password baru.</div>
       </sc-if>
 
     </main>
@@ -213,9 +303,16 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script>
 class Component extends DCLogic {
-  state = { view:'login', email:'', password:'', loginError:'', module:'dash', compTab:'rups', regQuery:'', regTopic:'Semua' };
-
-  ACCOUNTS = [{ email:'dony.renato@aerternum-legal.com', pass:'aerternum2026', name:'Dony Renato', role:'Partner' }];
+  // view 'memuat' dipakai sebentar saat halaman dibuka, selagi menanyakan ke
+  // server apakah sesi masih berlaku. Selama itu tidak ada yang digambar,
+  // supaya layar login tidak sempat berkedip untuk pengguna yang sudah masuk.
+  state = {
+    view:'memuat', email:'', password:'', loginError:'', sedangLogin:false,
+    saya:null, module:'dash', compTab:'rups', regQuery:'', regTopic:'Semua',
+    dokumen:[], dokPesan:'', dokPesanBuruk:false,
+    daftarUser:[], fNama:'', fEmail:'', fJabatan:'', fKelola:false,
+    sedangTambah:false, userPesan:'', userPesanBuruk:false, passBaru:'',
+  };
 
   REGS = [
     { num:'Permenaker 7/2026', title:'Pekerjaan Alih Daya', topic:'Employment', year:2026, status:'Berlaku' },
@@ -268,7 +365,25 @@ class Component extends DCLogic {
   ];
 
   componentDidMount() {
-    try { if (localStorage.getItem('alp-internal-session') === 'dony') this.setState({ view:'app' }); } catch (e) {}
+    // Yang menentukan sudah login atau belum adalah server, lewat cookie sesi
+    // bertanda tangan. Tidak ada lagi penanda di browser yang bisa dipalsukan.
+    this.api('/api/session')
+      .then(d => { this.setState({ view:'app', saya:d.pengguna }); this.muatDokumen(); })
+      .catch(() => this.setState({ view:'login' }));
+  }
+
+  // Satu pintu untuk semua panggilan ke server.
+  async api(url, opsi) {
+    const r = await fetch(url, Object.assign({ credentials:'same-origin' }, opsi));
+    let d = null;
+    try { d = await r.json(); } catch (e) {}
+    if (!r.ok) throw new Error((d && d.error) || 'Gangguan pada server (' + r.status + ')');
+    return d || {};
+  }
+
+  slug(teks) {
+    return String(teks).toLowerCase().normalize('NFKD')
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
   }
 
   badge(kind) {
@@ -280,10 +395,13 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const { view, module, compTab, regQuery, regTopic } = this.state;
+    const { view, module, compTab, regQuery, regTopic, saya } = this.state;
     const isApp = view === 'app';
 
+    // Menu "Pengguna" hanya muncul untuk akun yang memang berhak mengelola.
+    // Penanda ini tidak pernah ditampilkan sebagai jabatan di layar mana pun.
     const menuDefs = [ { key:'dash', label:'Dashboard' }, { key:'regs', label:'Peraturan' }, { key:'comp', label:'Kepatuhan' } ];
+    if (saya && saya.kelolaPengguna) menuDefs.push({ key:'users', label:'Pengguna' });
     const menu = menuDefs.map(m => ({ ...m,
       style: 'text-align:left;border:none;cursor:pointer;border-radius:5px;padding:12px 14px;font-size:14.5px;font-weight:600;' +
         (module === m.key ? 'background:#C0212F;color:#fff;' : 'background:none;color:#D6CEC4;') }));
@@ -311,8 +429,34 @@ class Component extends DCLogic {
     const lkpmPeriodStyle = 'display:block;margin-top:5px;font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;color:#8A8276;white-space:nowrap;';
     const lkpmDueStyle = 'display:block;margin-top:2px;font-size:11px;font-weight:700;letter-spacing:0;text-transform:none;color:#9A6A00;white-space:nowrap;';
 
-    const lkpm = this.LKPM.map(l => ({ client:l.client, q1:l.q[0], q2:l.q[1], q3:l.q[2], q4:l.q[3], q1Style:lq(l.q[0]), q2Style:lq(l.q[1]), q3Style:lq(l.q[2]), q4Style:lq(l.q[3]) }));
+    // Dokumen yang sudah terunggah dipetakan ke sel klien x kuartal.
+    const dok = {};
+    for (const d of this.state.dokumen) dok[d.klien + '|' + d.kuartal] = d;
 
+    const gayaNamaBerkas = 'display:block;margin-top:7px;font-size:11px;color:#4A423A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    const unggahBtnStyle = 'border:1px solid #D8CFC0;background:#fff;color:#6B6259;border-radius:20px;padding:4px 10px;font-size:10.5px;font-weight:700;cursor:pointer;';
+    const unduhBtnStyle  = 'border:none;background:#33691E;color:#fff;border-radius:20px;padding:5px 10px;font-size:10.5px;font-weight:700;cursor:pointer;';
+    const hapusBtnStyle  = 'border:none;background:none;color:#8A8276;font-size:15px;line-height:1;padding:0 3px;cursor:pointer;';
+
+    const selKuartal = (client, n) => {
+      const d = dok[this.slug(client) + '|Q' + n];
+      return {
+        ['q' + n + 'File']: d ? d.nama : '',
+        ['q' + n + 'Path']: d ? d.pathname : '',
+        ['q' + n + 'FileStyle']: d ? gayaNamaBerkas : 'display:none;',
+        ['q' + n + 'AksiStyle']: d ? unduhBtnStyle : 'display:none;',
+        ['q' + n + 'HapusStyle']: d ? hapusBtnStyle : 'display:none;',
+      };
+    };
+
+    const lkpm = this.LKPM.map(l => Object.assign(
+      { client:l.client, q1:l.q[0], q2:l.q[1], q3:l.q[2], q4:l.q[3],
+        q1Style:lq(l.q[0]), q2Style:lq(l.q[1]), q3Style:lq(l.q[2]), q4Style:lq(l.q[3]) },
+      selKuartal(l.client, 1), selKuartal(l.client, 2),
+      selKuartal(l.client, 3), selKuartal(l.client, 4),
+    ));
+
+    const miniBtnStyle = 'border:1px solid #D8CFC0;background:#fff;color:#6B6259;border-radius:20px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;';
     const tabBase = 'border:none;cursor:pointer;padding:11px 26px;font-size:13.5px;font-weight:700;';
     const today = new Date().toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
 
@@ -323,11 +467,24 @@ class Component extends DCLogic {
       setPassword: e => this.setState({ password: e.target.value }),
       loginKey: e => { if (e.key === 'Enter') this.login(); },
       doLogin: () => this.login(),
-      doLogout: () => { try { localStorage.removeItem('alp-internal-session'); } catch (er) {} this.setState({ view:'login', password:'' }); },
+      doLogout: () => this.logout(),
+      loginBtnLabel: this.state.sedangLogin ? 'Memeriksa\u2026' : 'Sign in',
+      loginBtnStyle: 'width:100%;margin-top:14px;background:#1E1714;color:#F4F2EC;border:none;border-radius:30px;padding:14px;font-size:15px;font-weight:700;'
+        + (this.state.sedangLogin ? 'opacity:.6;cursor:default;' : 'cursor:pointer;'),
+
+      namaSaya: saya ? saya.nama : '',
+      jabatanSaya: saya ? saya.jabatan : '',
+      inisial: saya ? String(saya.nama).split(/\s+/).slice(0, 2).map(x => x[0] || '').join('').toUpperCase() : '',
+
       menu,
-      goModule: e => this.setState({ module: e.currentTarget.dataset.mod }),
+      goModule: e => {
+        const mod = e.currentTarget.dataset.mod;
+        this.setState({ module: mod, userPesan:'', passBaru:'' });
+        if (mod === 'users') this.muatPengguna();
+      },
       goCompliance: () => this.setState({ module:'comp' }),
       isDash: isApp && module === 'dash', isRegs: isApp && module === 'regs', isComp: isApp && module === 'comp',
+      isUsers: isApp && module === 'users' && !!(saya && saya.kelolaPengguna),
       today,
       stats: [
         { label:'Klien aktif', value:'17', sub:'+2 kuartal ini' },
@@ -347,14 +504,161 @@ class Component extends DCLogic {
       rups, lkpm,
       lkpmPeriod1, lkpmPeriod2, lkpmPeriod3, lkpmPeriod4, lkpmPeriodStyle,
       lkpmDue1, lkpmDue2, lkpmDue3, lkpmDue4, lkpmDueStyle,
+
+      unggahBtnStyle,
+      pilihBerkas: e => this.pilihBerkas(e.currentTarget.dataset.klien, e.currentTarget.dataset.kuartal),
+      unduhBerkas: e => { window.location.href = '/api/documents?unduh=' + encodeURIComponent(e.currentTarget.dataset.path); },
+      hapusBerkas: e => this.hapusDokumen(e.currentTarget.dataset.path),
+      dokPesan: this.state.dokPesan,
+      dokPesanStyle: this.state.dokPesan
+        ? 'margin-top:14px;font-size:13px;font-weight:600;color:' + (this.state.dokPesanBuruk ? '#C0212F' : '#33691E') + ';'
+        : 'display:none;',
+
+      fNama: this.state.fNama, fEmail: this.state.fEmail, fJabatan: this.state.fJabatan, fKelola: this.state.fKelola,
+      setFNama: e => this.setState({ fNama: e.target.value }),
+      setFEmail: e => this.setState({ fEmail: e.target.value }),
+      setFJabatan: e => this.setState({ fJabatan: e.target.value }),
+      setFKelola: e => this.setState({ fKelola: e.target.checked }),
+      doTambahPengguna: () => this.tambahPengguna(),
+      tambahBtnLabel: this.state.sedangTambah ? 'Menyimpan\u2026' : 'Tambah',
+      tambahBtnStyle: 'width:100%;background:#1E1714;color:#F4F2EC;border:none;border-radius:30px;padding:12px;font-size:14px;font-weight:700;'
+        + (this.state.sedangTambah ? 'opacity:.6;cursor:default;' : 'cursor:pointer;'),
+      miniBtnStyle,
+      daftarUser: this.state.daftarUser.map(u => ({
+        nama: u.nama, email: u.email, jabatan: u.jabatan || '\u2014',
+        // akun sendiri tidak boleh dihapus dari layar ini
+        hapusStyle: (saya && u.email === saya.email) ? 'display:none;' : miniBtnStyle,
+      })),
+      doResetPassword: e => this.resetPassword(e.currentTarget.dataset.email),
+      doHapusPengguna: e => this.hapusPengguna(e.currentTarget.dataset.email),
+      userPesan: this.state.userPesan,
+      userPesanStyle: this.state.userPesan
+        ? 'margin-top:16px;font-size:13px;font-weight:600;color:' + (this.state.userPesanBuruk ? '#C0212F' : '#33691E') + ';'
+        : 'display:none;',
+      passBaru: this.state.passBaru,
+      passBoxStyle: this.state.passBaru
+        ? 'margin-top:14px;padding:18px 20px;background:#FDF8EE;border:1px solid #E8D9B8;border-radius:5px;'
+        : 'display:none;',
     };
   }
 
   login() {
-    const acc = this.ACCOUNTS.find(a => a.email === this.state.email.trim().toLowerCase() && a.pass === this.state.password);
-    if (!acc) { this.setState({ loginError:'Email atau password salah.' }); return; }
-    try { localStorage.setItem('alp-internal-session', 'dony'); } catch (e) {}
-    this.setState({ view:'app', loginError:'', module:'dash' });
+    if (this.state.sedangLogin) return;
+    this.setState({ sedangLogin:true, loginError:'' });
+    this.api('/api/login', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ email:this.state.email, password:this.state.password }),
+    })
+      .then(d => {
+        this.setState({ view:'app', saya:d.pengguna, module:'dash', password:'', sedangLogin:false });
+        this.muatDokumen();
+      })
+      .catch(e => this.setState({ loginError:e.message, sedangLogin:false }));
+  }
+
+  logout() {
+    this.api('/api/logout', { method:'POST' })
+      .catch(() => {})
+      .then(() => this.setState({
+        view:'login', saya:null, password:'', dokumen:[], daftarUser:[],
+        passBaru:'', userPesan:'', dokPesan:'',
+      }));
+  }
+
+  // ---------- dokumen LKPM ----------
+
+  muatDokumen() {
+    this.api('/api/documents?tahun=' + this.LKPM_YEAR)
+      .then(d => this.setState({ dokumen: d.dokumen || [] }))
+      .catch(e => this.setState({ dokPesan:'Daftar dokumen gagal dimuat: ' + e.message, dokPesanBuruk:true }));
+  }
+
+  pilihBerkas(klien, kuartal) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.pdf,.doc,.docx,.xls,.xlsx,.jpg,.jpeg,.png';
+    input.onchange = () => { if (input.files && input.files[0]) this.unggah(klien, kuartal, input.files[0]); };
+    input.click();
+  }
+
+  unggah(klien, kuartal, berkas) {
+    if (berkas.size > 20 * 1024 * 1024) {
+      this.setState({ dokPesan:'Berkas melebihi 20 MB, tidak bisa diunggah.', dokPesanBuruk:true });
+      return;
+    }
+    this.setState({ dokPesan:'Mengunggah ' + berkas.name + ' \u2026', dokPesanBuruk:false });
+    const url = '/api/documents?tahun=' + this.LKPM_YEAR
+      + '&kuartal=' + encodeURIComponent(kuartal)
+      + '&klien=' + encodeURIComponent(klien)
+      + '&nama=' + encodeURIComponent(berkas.name);
+    this.api(url, {
+      method:'POST',
+      headers:{ 'Content-Type': berkas.type || 'application/octet-stream' },
+      body: berkas,
+    })
+      .then(() => { this.setState({ dokPesan: berkas.name + ' berhasil diunggah.', dokPesanBuruk:false }); this.muatDokumen(); })
+      .catch(e => this.setState({ dokPesan:'Gagal mengunggah: ' + e.message, dokPesanBuruk:true }));
+  }
+
+  hapusDokumen(pathname) {
+    if (!window.confirm('Hapus dokumen ini? Tindakan ini tidak bisa dibatalkan.')) return;
+    this.api('/api/documents?aksi=hapus&pathname=' + encodeURIComponent(pathname), { method:'POST' })
+      .then(() => { this.setState({ dokPesan:'Dokumen dihapus.', dokPesanBuruk:false }); this.muatDokumen(); })
+      .catch(e => this.setState({ dokPesan:'Gagal menghapus: ' + e.message, dokPesanBuruk:true }));
+  }
+
+  // ---------- pengguna ----------
+
+  muatPengguna() {
+    this.api('/api/users')
+      .then(d => this.setState({ daftarUser: d.users || [] }))
+      .catch(e => this.setState({ userPesan:'Daftar pengguna gagal dimuat: ' + e.message, userPesanBuruk:true }));
+  }
+
+  tambahPengguna() {
+    if (this.state.sedangTambah) return;
+    const { fNama, fEmail, fJabatan, fKelola } = this.state;
+    if (!fNama.trim() || !fEmail.trim()) {
+      this.setState({ userPesan:'Nama dan email wajib diisi.', userPesanBuruk:true, passBaru:'' });
+      return;
+    }
+    this.setState({ sedangTambah:true, userPesan:'', passBaru:'' });
+    this.api('/api/users', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ aksi:'tambah', nama:fNama, email:fEmail, jabatan:fJabatan, kelolaPengguna:fKelola }),
+    })
+      .then(d => {
+        this.setState({
+          sedangTambah:false, fNama:'', fEmail:'', fJabatan:'', fKelola:false,
+          passBaru:d.password, userPesan:'Akun untuk ' + d.email + ' berhasil dibuat.', userPesanBuruk:false,
+        });
+        this.muatPengguna();
+      })
+      .catch(e => this.setState({ sedangTambah:false, userPesan:e.message, userPesanBuruk:true }));
+  }
+
+  resetPassword(email) {
+    if (!window.confirm('Buat password baru untuk ' + email + '? Password lama langsung tidak berlaku.')) return;
+    this.api('/api/users', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ aksi:'reset', email }),
+    })
+      .then(d => this.setState({ passBaru:d.password, userPesan:'Password baru untuk ' + email + ':', userPesanBuruk:false }))
+      .catch(e => this.setState({ userPesan:e.message, userPesanBuruk:true, passBaru:'' }));
+  }
+
+  hapusPengguna(email) {
+    if (!window.confirm('Hapus akun ' + email + '? Yang bersangkutan langsung tidak bisa masuk lagi.')) return;
+    this.api('/api/users', {
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ aksi:'hapus', email }),
+    })
+      .then(() => { this.setState({ userPesan:'Akun ' + email + ' dihapus.', userPesanBuruk:false, passBaru:'' }); this.muatPengguna(); })
+      .catch(e => this.setState({ userPesan:e.message, userPesanBuruk:true }));
   }
 }
 
