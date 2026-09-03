@@ -184,7 +184,11 @@
         <sc-if value="{{ isLkpm }}" hint-placeholder-val="{{ false }}">
           <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;overflow:hidden;">
             <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,110px);gap:12px;padding:14px 24px;background:#F4F2EC;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6259;">
-              <span>Klien (PMA)</span><span>Q1</span><span>Q2</span><span>Q3</span><span>Q4</span>
+              <span>Klien (PMA)</span>
+              <span>Q1<span style="{{ lkpmPeriodStyle }}">{{ lkpmPeriod1 }}</span><span style="{{ lkpmDueStyle }}">{{ lkpmDue1 }}</span></span>
+              <span>Q2<span style="{{ lkpmPeriodStyle }}">{{ lkpmPeriod2 }}</span><span style="{{ lkpmDueStyle }}">{{ lkpmDue2 }}</span></span>
+              <span>Q3<span style="{{ lkpmPeriodStyle }}">{{ lkpmPeriod3 }}</span><span style="{{ lkpmDueStyle }}">{{ lkpmDue3 }}</span></span>
+              <span>Q4<span style="{{ lkpmPeriodStyle }}">{{ lkpmPeriod4 }}</span><span style="{{ lkpmDueStyle }}">{{ lkpmDue4 }}</span></span>
             </div>
             <sc-for list="{{ lkpm }}" as="l" hint-placeholder-count="5">
               <div style="display:grid;grid-template-columns:minmax(0,1.3fr) repeat(4,110px);gap:12px;padding:16px 24px;border-top:1px solid #EFE9DD;align-items:center;">
@@ -250,6 +254,11 @@ class Component extends DCLogic {
     { client:'PT Bumi Tekno Lestari', fy:'2025', due:'30 Juni 2026', status:'Selesai' },
   ];
 
+  // Tahun periode pelaporan LKPM yang sedang ditampilkan di tabel di bawah.
+  // Ganti angka ini satu kali setiap ganti tahun — tanggal jatuh tempo di
+  // header tabel ikut menyesuaikan sendiri.
+  LKPM_YEAR = 2026;
+
   LKPM = [
     { client:'PT Privy Identitas Digital', q:['Lapor','Lapor','Jatuh tempo','—'] },
     { client:'PT Basis Inovasi Global', q:['Lapor','Lapor','Jatuh tempo','—'] },
@@ -292,6 +301,16 @@ class Component extends DCLogic {
     const rups = this.RUPS.map(r => ({ ...r, badgeStyle: this.badge(r.status === 'Selesai' ? 'good' : 'bad') }));
 
     const lq = s => s === 'Lapor' ? this.badge('good') : s === 'Terlambat' ? this.badge('bad') : s === 'Jatuh tempo' ? this.badge('warn') : this.badge('neutral');
+    // Jatuh tempo LKPM: paling lambat tanggal 10 bulan berikutnya setelah
+    // kuartal berakhir. Kuartal IV jatuh pada Januari tahun berikutnya.
+    const ly = this.LKPM_YEAR;
+    const lkpmPeriod1 = 'Jan\u2013Mar ' + ly, lkpmPeriod2 = 'Apr\u2013Jun ' + ly;
+    const lkpmPeriod3 = 'Jul\u2013Sep ' + ly, lkpmPeriod4 = 'Okt\u2013Des ' + ly;
+    const lkpmDue1 = '10 Apr ' + ly, lkpmDue2 = '10 Jul ' + ly;
+    const lkpmDue3 = '10 Okt ' + ly, lkpmDue4 = '10 Jan ' + (ly + 1);
+    const lkpmPeriodStyle = 'display:block;margin-top:5px;font-size:10.5px;font-weight:600;letter-spacing:0;text-transform:none;color:#8A8276;white-space:nowrap;';
+    const lkpmDueStyle = 'display:block;margin-top:2px;font-size:11px;font-weight:700;letter-spacing:0;text-transform:none;color:#9A6A00;white-space:nowrap;';
+
     const lkpm = this.LKPM.map(l => ({ client:l.client, q1:l.q[0], q2:l.q[1], q3:l.q[2], q4:l.q[3], q1Style:lq(l.q[0]), q2Style:lq(l.q[1]), q3Style:lq(l.q[2]), q4Style:lq(l.q[3]) }));
 
     const tabBase = 'border:none;cursor:pointer;padding:11px 26px;font-size:13.5px;font-weight:700;';
@@ -326,6 +345,8 @@ class Component extends DCLogic {
       rupsTabStyle: tabBase + (compTab === 'rups' ? 'background:#1E1714;color:#F4F2EC;' : 'background:none;color:#6B6259;'),
       lkpmTabStyle: tabBase + (compTab === 'lkpm' ? 'background:#1E1714;color:#F4F2EC;' : 'background:none;color:#6B6259;'),
       rups, lkpm,
+      lkpmPeriod1, lkpmPeriod2, lkpmPeriod3, lkpmPeriod4, lkpmPeriodStyle,
+      lkpmDue1, lkpmDue2, lkpmDue3, lkpmDue4, lkpmDueStyle,
     };
   }
 
