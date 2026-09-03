@@ -81,19 +81,21 @@ dengan salah satunya, hentikan dan tanyakan dulu.
    Contoh baik: "Perbarui nomor telepon di halaman kontak".
 
 6. **Jangan menambah framework, library, atau dependensi baru tanpa bertanya.**
-   Repositori ini tidak punya `package.json` dan tidak punya proses build.
-   Menambah salah satunya mengubah cara Vercel men-deploy situs dan berisiko
-   mematikan situs. Situs ini sederhana dan harus tetap sederhana.
+   Sejak 3 September 2026 ada `deploy/package.json` dengan **satu** dependensi,
+   `@vercel/blob`, dipakai oleh Internal System. Selain itu tidak ada apa pun —
+   tidak ada React di sisi server, tidak ada bundler, tidak ada framework.
+   Pertahankan begitu. Kode server memakai modul bawaan Node (`node:crypto`)
+   untuk hash password dan tanda tangan sesi, dan itu memang disengaja.
 
 7. **Jangan commit rahasia.** API key, token, password, isi `.env` — tidak
-   pernah masuk repo.
-   ⚠️ **Sudah ada pelanggaran yang belum diperbaiki:** `deploy/internal.html`
-   baris 214 memuat email dan password dalam teks biasa
-   (`ACCOUNTS = [{ email:'dony.renato@...', pass:'...' }]`), dan baris 45
-   mencetaknya di layar login sebagai teks "Demo: ...". Halaman ini publik —
-   siapa pun bisa membacanya lewat "View Source". Ini portal demo, tapi
-   password tersebut harus dianggap bocor dan tidak boleh dipakai di tempat
-   lain. Ingatkan pemilik proyek kalau menyentuh file ini.
+   pernah masuk repo. Semua rahasia tinggal di Environment Variables milik
+   Vercel dan dibaca lewat `process.env`.
+   Kebocoran kredensial yang dulu ada di `internal.html` **sudah diperbaiki**
+   pada commit `c463cf2`; password lama `aerternum2026` tetap harus dianggap
+   bocor selamanya dan tidak boleh dipakai di mana pun.
+   Jangan pernah mengembalikan pola lama itu: daftar akun tidak boleh ada di
+   dalam berkas HTML, dan pemeriksaan password tidak boleh dilakukan di
+   browser.
 
 8. **Jangan menyentuh konfigurasi deploy tanpa diminta.** `deploy/vercel.json`,
    pengaturan **Root Directory** di dashboard Vercel, domain, dan environment
@@ -105,12 +107,53 @@ dengan salah satunya, hentikan dan tanyakan dulu.
 
 ## Stack
 
-**Situs statis, tanpa build.** Diverifikasi lewat audit repositori:
+Repo ini punya **dua bagian yang sangat berbeda**. Jangan mencampur keduanya.
 
-- **Tidak ada `package.json`**, tidak ada `node_modules`, tidak ada
-  `tsconfig`/`*.config.js`, tidak ada `Dockerfile`, tidak ada GitHub Actions.
-  Satu-satunya file konfigurasi di seluruh repo adalah `deploy/vercel.json`.
-- Vercel tidak menjalankan Node sama sekali — tidak ada versi Node yang relevan.
+### Bagian 1 — situs publik: statis, tanpa build
+
+`index.html`, `404.html`, `support.js`, `image-slot.js`, `assets/`. Vercel
+hanya menyalinnya apa adanya. Tidak ada build, tidak ada Node yang berjalan.
+
+### Bagian 2 — Internal System: fungsi server di Vercel
+
+Ditambahkan 3 September 2026 supaya `/internal` punya login sungguhan dan
+tempat menyimpan dokumen LKPM.
+
+| Berkas | Isi |
+|---|---|
+| `deploy/package.json` | satu dependensi: `@vercel/blob` |
+| `deploy/lib/auth.js` | hash password (scrypt), kunci sesi (HKDF), cookie bertanda tangan |
+| `deploy/lib/penyimpanan.js` | daftar pengguna dan dokumen di Vercel Blob |
+| `deploy/api/login.js` `logout.js` `session.js` | login diperiksa di server |
+| `deploy/api/password.js` | ganti password sendiri, terbuka untuk semua pengguna |
+| `deploy/api/users.js` | modul Pengguna, hanya untuk akun berpenanda `kelolaPengguna` |
+| `deploy/api/documents.js` | unggah, unduh, hapus dokumen LKPM |
+| `deploy/api/health.js` | pemeriksaan konfigurasi, tidak menampilkan nilai rahasia |
+
+Aturan yang berlaku di bagian ini:
+
+- **Rahasia hanya dari `process.env`.** Tidak pernah ditulis di berkas.
+- **Dokumen selalu `access: 'private'`.** Jangan pernah diubah ke `'public'` —
+  isinya dokumen kepatuhan klien.
+- **Hash password tidak boleh keluar dari server.** Setiap respons yang memuat
+  data pengguna harus membuang field `hash` lebih dulu.
+- **Identitas diambil dari cookie sesi, bukan dari isian di halaman.** Ini yang
+  mencegah seseorang mengganti password milik orang lain.
+- Penanda `kelolaPengguna` adalah penanda internal. **Jangan pernah
+  ditampilkan sebagai jabatan di layar.** Jabatan yang tampil adalah jabatan
+  sebenarnya, misalnya "Partner".
+
+### Variabel lingkungan yang wajib ada di Vercel
+
+| Nama | Guna |
+|---|---|
+| `BLOB_READ_WRITE_TOKEN` | dibuat otomatis saat Blob store dibuat |
+| `ADMIN_EMAIL` | email akun pertama |
+| `ADMIN_PASSWORD` | password akun pertama, **hanya dibaca sekali** saat daftar pengguna masih kosong |
+| `SESSION_SECRET` | opsional — kalau kosong, kunci sesi diturunkan dari token Blob |
+
+Kalau login bermasalah, buka **`/api/health`** lebih dulu. Halaman itu
+menyebutkan bagian mana yang belum siap tanpa membocorkan nilai apa pun.
 
 Yang dipakai situs **saat berjalan di browser pengunjung** (bukan saat deploy):
 
@@ -148,8 +191,9 @@ ubah file  →  commit  →  push  →  Vercel menyalin isi deploy/  →  situs 
 
 Fakta yang diverifikasi dari repositori:
 
-- **Build command: tidak ada.** Tidak ada yang bisa dijalankan karena tidak ada
-  `package.json`. Vercel hanya menyalin file apa adanya.
+- **Build command: tidak ada.** Tidak ada skrip `build` di `package.json`,
+  jadi Vercel hanya memasang dependensi (`npm ci`), menyalin berkas statis apa
+  adanya, dan mengubah isi `deploy/api/` menjadi fungsi server.
 - **Output / folder yang dipublikasikan: `deploy/`.** Karena `vercel.json`
   berada di dalam `deploy/` (bukan di root repo), pengaturan **Root Directory
   di dashboard Vercel pasti diset ke `deploy`** — kalau tidak, `vercel.json`
@@ -164,10 +208,13 @@ Isi `deploy/vercel.json` selengkapnya:
 ```json
 {
   "cleanUrls": true,
-  "rewrites": [ { "source": "/(.*)", "destination": "/index.html" } ]
+  "rewrites": [ { "source": "/((?!api/).*)", "destination": "/index.html" } ]
 }
 ```
 
+- Pola `((?!api/).*)` mengecualikan `/api/` dari rewrite, supaya alamat itu
+  sampai ke fungsi server dan tidak dibelokkan ke `index.html`. **Jangan hapus
+  pengecualian ini** — seluruh Internal System langsung mati kalau hilang.
 - `cleanUrls: true` → alamat ditulis `/contact`, bukan `/contact.html`.
 - Rewrite tangkap-semua → **semua** alamat menampilkan `index.html`, lalu
   JavaScript memutuskan halaman mana yang tampil. Inilah yang membuat
@@ -244,16 +291,27 @@ lewati.
 Jangan perbaiki tanpa diminta — daftar ini hanya supaya tidak "ditemukan
 ulang" setiap sesi.
 
-1. **Kredensial terbuka** di `internal.html` baris 45 dan 214 (lihat Aturan 7).
-   Prioritas tertinggi kalau pemilik proyek minta perbaikan.
-2. **Domain tidak konsisten.** Tiga versi dipakai bersamaan:
-   `aerternumlegal.com` (5×, di tag canonical dan og:image),
-   `aerternum-legal.com` — pakai tanda hubung (34×, di sitemap, robots.txt,
-   alamat email, dan structured data), sedangkan situs tayang di
-   `aerternumlegal.vercel.app`. Merugikan SEO: sitemap menunjuk domain yang
-   berbeda dari canonical.
+1. **Domain tidak konsisten di `index.html`.** Domain resmi proyek ini adalah
+   **`aerternum-legal.com`** (pakai tanda hubung) — dipastikan dari dashboard
+   Vercel, terpasang berdampingan dengan `aerternumlegal.vercel.app`.
+   Sitemap, robots.txt, dan alamat email sudah memakai domain yang benar.
+   Yang salah adalah tag `canonical` dan `og:image` di `index.html`: keduanya
+   menunjuk `aerternumlegal.com` **tanpa** tanda hubung, domain yang tidak
+   terpasang. Merugikan SEO. Perbaikannya menyentuh `index.html` dan
+   `404.html` sekaligus (lihat Aturan 3).
 3. **`404.html` duplikat `index.html`** — 424 KB kembar yang harus dijaga
    sinkron, padahal tidak pernah tampil (lihat Aturan 3).
 4. **`Website sesuai dokumen.zip`** (23,6 MB) di root adalah salinan lama yang
    sudah tertinggal. Aman dihapus dari working tree, tapi menghapusnya tidak
    mengecilkan `.git`.
+5. **Belum ada jalan keluar kalau pemegang hak kelola lupa password.** Akun
+   awal hanya dibuat sekali, saat daftar pengguna masih kosong; setelah itu
+   mengubah `ADMIN_PASSWORD` tidak berpengaruh. Penawarnya bukan kode,
+   melainkan kebiasaan: **harus selalu ada minimal dua akun dengan
+   `kelolaPengguna`**, supaya bisa saling membuatkan password baru.
+   Jalan darurat terakhir: hapus `system/users.json` lewat Manage Blobs di
+   dashboard Vercel — tapi itu menghapus **seluruh** pengguna.
+6. **`LKPM_YEAR` di `internal.html` harus diganti manual setiap awal tahun.**
+   Satu angka, dan seluruh tanggal jatuh tempo ikut menyesuaikan. Sengaja
+   tidak dibuat mengikuti jam komputer, karena data status di tabel masih
+   data tetap per tahun.
