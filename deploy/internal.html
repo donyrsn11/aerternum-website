@@ -78,6 +78,20 @@
     <!-- Main -->
     <main style="flex:1;min-width:0;padding:40px 44px;">
 
+      <!-- ===== SARINGAN KLIEN (berlaku untuk semua modul) ===== -->
+      <sc-if value="{{ adaSaringanKlien }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:26px;padding-bottom:22px;border-bottom:1px solid #E4DCCB;">
+          <div style="position:relative;flex:1;min-width:260px;max-width:420px;">
+            <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);display:flex;color:#A79E90;pointer-events:none;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="11" cy="11" r="7"></circle><line x1="21" y1="21" x2="16.5" y2="16.5"></line></svg>
+            </span>
+            <input type="text" value="{{ klienQ }}" onChange="{{ setKlienQ }}" placeholder="Cari klien &mdash; ketik sebagian nama" style="width:100%;padding:11px 14px 11px 38px;border:1px solid #D8CFC0;border-radius:30px;font-size:14px;background:#fff;" />
+          </div>
+          <button onClick="{{ hapusKlienQ }}" style="{{ hapusKlienStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Tampilkan semua klien</button>
+          <span style="{{ ringkasKlienStyle }}">{{ ringkasKlien }}</span>
+        </div>
+      </sc-if>
+
       <!-- ===== DASHBOARD ===== -->
       <sc-if value="{{ isDash }}" hint-placeholder-val="{{ true }}">
         <div style="margin-bottom:30px;">
@@ -324,7 +338,7 @@ class Component extends DCLogic {
   // supaya layar login tidak sempat berkedip untuk pengguna yang sudah masuk.
   state = {
     view:'memuat', email:'', password:'', loginError:'', sedangLogin:false,
-    saya:null, module:'dash', compTab:'lkpm', regQuery:'', regTopic:'Semua',
+    saya:null, module:'dash', compTab:'lkpm', regQuery:'', regTopic:'Semua', klienQ:'',
     dokumen:[], dokPesan:'', dokPesanBuruk:false,
     daftarUser:[], fNama:'', fEmail:'', fJabatan:'', fKelola:false,
     sedangTambah:false, userPesan:'', userPesanBuruk:false, passBaru:'',
@@ -412,7 +426,7 @@ class Component extends DCLogic {
   }
 
   renderVals() {
-    const { view, module, compTab, regQuery, regTopic, saya } = this.state;
+    const { view, module, compTab, regQuery, regTopic, klienQ, saya } = this.state;
     const isApp = view === 'app';
 
     // Kepatuhan punya dua isi, RUPS dan LKPM. Saat modulnya sedang dibuka,
@@ -446,10 +460,30 @@ class Component extends DCLogic {
       .filter(r => !q || (r.num + ' ' + r.title + ' ' + r.topic).toLowerCase().includes(q))
       .map(r => ({ ...r, badgeStyle: this.badge('good') }));
 
-    const stMap = { 'Berjalan':'warn', 'Review':'neutral', 'Selesai':'good' };
-    const projects = this.PROJECTS.map(p => ({ ...p, badgeStyle: this.badge(stMap[p.status] || 'neutral') }));
+    // Satu saringan klien yang berlaku untuk seluruh modul. Kosong berarti
+    // semua klien ditampilkan seperti biasa.
+    const kq = klienQ.trim().toLowerCase();
+    const cocok = nama => !kq || String(nama).toLowerCase().includes(kq);
+    // Tenggat yang berlaku untuk semua klien PMA tetap ditampilkan meski
+    // sedang menyaring satu klien, karena kewajibannya memang mengenai dia.
+    const cocokTenggat = d => cocok(d.client) || /seluruh/i.test(d.client);
 
-    const rups = this.RUPS.map(r => ({ ...r, badgeStyle: this.badge(r.status === 'Selesai' ? 'good' : 'bad') }));
+    // Daftar klien unik dikumpulkan dari seluruh sumber, supaya ringkasan
+    // "N dari M klien" menghitung hal yang sama di modul mana pun.
+    const semuaKlien = [...new Set([
+      ...this.PROJECTS.map(x => x.client),
+      ...this.RUPS.map(x => x.client),
+      ...this.LKPM.map(x => x.client),
+    ])];
+    const totalKlien = semuaKlien.length;
+    const klienCocok = semuaKlien.filter(cocok).length;
+
+    const stMap = { 'Berjalan':'warn', 'Review':'neutral', 'Selesai':'good' };
+    const projects = this.PROJECTS.filter(p => cocok(p.client))
+      .map(p => ({ ...p, badgeStyle: this.badge(stMap[p.status] || 'neutral') }));
+
+    const rups = this.RUPS.filter(r => cocok(r.client))
+      .map(r => ({ ...r, badgeStyle: this.badge(r.status === 'Selesai' ? 'good' : 'bad') }));
 
     const lq = s => s === 'Lapor' ? this.badge('good') : s === 'Terlambat' ? this.badge('bad') : s === 'Jatuh tempo' ? this.badge('warn') : this.badge('neutral');
     // Jatuh tempo LKPM: paling lambat tanggal 10 bulan berikutnya setelah
@@ -497,7 +531,7 @@ class Component extends DCLogic {
       };
     };
 
-    const lkpm = this.LKPM.map(l => Object.assign(
+    const lkpm = this.LKPM.filter(l => cocok(l.client)).map(l => Object.assign(
       { client:l.client, q1:l.q[0], q2:l.q[1], q3:l.q[2], q4:l.q[3],
         q1Style:lq(l.q[0]), q2Style:lq(l.q[1]), q3Style:lq(l.q[2]), q4Style:lq(l.q[3]) },
       selKuartal(l.client, 1), selKuartal(l.client, 2),
@@ -544,7 +578,19 @@ class Component extends DCLogic {
         { label:'Fee diterima (YTD)', value:'Rp 2,4 M', sub:'per Agustus 2026' },
         { label:'Proyek berjalan', value:'8', sub:'3 menunggu review' },
       ],
-      projects, deadlines: this.DEADLINES,
+      projects, deadlines: this.DEADLINES.filter(cocokTenggat),
+
+      // Bar pencarian hanya relevan di modul yang memang memuat daftar klien.
+      adaSaringanKlien: isApp && (module === 'dash' || module === 'comp'),
+      klienQ,
+      setKlienQ: e => this.setState({ klienQ: e.target.value }),
+      hapusKlienQ: () => this.setState({ klienQ:'' }),
+      hapusKlienStyle: 'border:1px solid #D8CFC0;background:#fff;color:#6B6259;border-radius:30px;padding:10px 18px;font-size:13px;font-weight:600;white-space:nowrap;'
+        + (kq ? 'cursor:pointer;' : 'display:none;'),
+      ringkasKlien: !kq
+        ? `Menampilkan seluruh ${totalKlien} klien`
+        : (klienCocok ? `${klienCocok} dari ${totalKlien} klien` : `Tidak ada klien yang cocok dengan \u201c${klienQ.trim()}\u201d`),
+      ringkasKlienStyle: 'font-size:13px;font-weight:600;color:' + (kq && !klienCocok ? '#C0212F' : '#8A8276') + ';',
       regTopics: topics, regs, regsEmpty: regs.length === 0,
       regQuery, setRegQuery: e => this.setState({ regQuery: e.target.value }),
       regTopic, setRegTopic: e => this.setState({ regTopic: e.target.value }),
