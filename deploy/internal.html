@@ -196,7 +196,7 @@
                 <span style="font-size:14px;font-weight:600;padding-top:5px;">{{ l.client }}</span>
                 <span style="display:block;text-align:center;">
                   <span style="{{ l.q1Style }}">{{ l.q1 }}</span>
-                  <span style="{{ l.q1FileStyle }}" title="{{ l.q1File }}">{{ l.q1File }}</span>
+                  <span style="{{ l.q1FileStyle }}" title="{{ l.q1Judul }}">{{ l.q1File }}</span><span style="{{ l.q1OlehStyle }}">{{ l.q1Oleh }}</span>
                   <span style="display:flex;gap:6px;justify-content:center;margin-top:7px;">
                     <button onClick="{{ pilihBerkas }}" data-klien="{{ l.client }}" data-kuartal="Q1" style="{{ unggahBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Unggah</button>
                     <button onClick="{{ unduhBerkas }}" data-path="{{ l.q1Path }}" style="{{ l.q1AksiStyle }}" style-hover="background:#33691E;">Unduh</button>
@@ -205,7 +205,7 @@
                 </span>
                 <span style="display:block;text-align:center;">
                   <span style="{{ l.q2Style }}">{{ l.q2 }}</span>
-                  <span style="{{ l.q2FileStyle }}" title="{{ l.q2File }}">{{ l.q2File }}</span>
+                  <span style="{{ l.q2FileStyle }}" title="{{ l.q2Judul }}">{{ l.q2File }}</span><span style="{{ l.q2OlehStyle }}">{{ l.q2Oleh }}</span>
                   <span style="display:flex;gap:6px;justify-content:center;margin-top:7px;">
                     <button onClick="{{ pilihBerkas }}" data-klien="{{ l.client }}" data-kuartal="Q2" style="{{ unggahBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Unggah</button>
                     <button onClick="{{ unduhBerkas }}" data-path="{{ l.q2Path }}" style="{{ l.q2AksiStyle }}" style-hover="background:#33691E;">Unduh</button>
@@ -214,7 +214,7 @@
                 </span>
                 <span style="display:block;text-align:center;">
                   <span style="{{ l.q3Style }}">{{ l.q3 }}</span>
-                  <span style="{{ l.q3FileStyle }}" title="{{ l.q3File }}">{{ l.q3File }}</span>
+                  <span style="{{ l.q3FileStyle }}" title="{{ l.q3Judul }}">{{ l.q3File }}</span><span style="{{ l.q3OlehStyle }}">{{ l.q3Oleh }}</span>
                   <span style="display:flex;gap:6px;justify-content:center;margin-top:7px;">
                     <button onClick="{{ pilihBerkas }}" data-klien="{{ l.client }}" data-kuartal="Q3" style="{{ unggahBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Unggah</button>
                     <button onClick="{{ unduhBerkas }}" data-path="{{ l.q3Path }}" style="{{ l.q3AksiStyle }}" style-hover="background:#33691E;">Unduh</button>
@@ -223,7 +223,7 @@
                 </span>
                 <span style="display:block;text-align:center;">
                   <span style="{{ l.q4Style }}">{{ l.q4 }}</span>
-                  <span style="{{ l.q4FileStyle }}" title="{{ l.q4File }}">{{ l.q4File }}</span>
+                  <span style="{{ l.q4FileStyle }}" title="{{ l.q4Judul }}">{{ l.q4File }}</span><span style="{{ l.q4OlehStyle }}">{{ l.q4Oleh }}</span>
                   <span style="display:flex;gap:6px;justify-content:center;margin-top:7px;">
                     <button onClick="{{ pilihBerkas }}" data-klien="{{ l.client }}" data-kuartal="Q4" style="{{ unggahBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Unggah</button>
                     <button onClick="{{ unduhBerkas }}" data-path="{{ l.q4Path }}" style="{{ l.q4AksiStyle }}" style-hover="background:#33691E;">Unduh</button>
@@ -456,14 +456,29 @@ class Component extends DCLogic {
     for (const d of this.state.dokumen) dok[d.klien + '|' + d.kuartal] = d;
 
     const gayaNamaBerkas = 'display:block;margin-top:7px;font-size:11px;color:#4A423A;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    const gayaPengunggah = 'display:block;margin-top:2px;font-size:10px;color:#8A8276;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;';
+    const tanggalSingkat = t => {
+      try { return new Date(t).toLocaleDateString('id-ID', { day:'numeric', month:'short', year:'numeric' }); }
+      catch (e) { return ''; }
+    };
     const unggahBtnStyle = 'border:1px solid #D8CFC0;background:#fff;color:#6B6259;border-radius:20px;padding:4px 10px;font-size:10.5px;font-weight:700;cursor:pointer;';
     const unduhBtnStyle  = 'border:none;background:#33691E;color:#fff;border-radius:20px;padding:5px 10px;font-size:10.5px;font-weight:700;cursor:pointer;';
     const hapusBtnStyle  = 'border:none;background:none;color:#8A8276;font-size:15px;line-height:1;padding:0 3px;cursor:pointer;';
 
     const selKuartal = (client, n) => {
       const d = dok[this.slug(client) + '|Q' + n];
+      // Dokumen lama, yang diunggah sebelum pencatatan pengunggah ada, tidak
+      // punya keterangan ini — barisnya disembunyikan, bukan diisi tebakan.
+      const oleh = d && d.pengunggah ? d.pengunggah : '';
+      const judul = d
+        ? d.nama + (oleh ? '\nDiunggah oleh ' + oleh : '')
+            + (d.diunggahPada ? '\n' + tanggalSingkat(d.diunggahPada) : '')
+        : '';
       return {
         ['q' + n + 'File']: d ? d.nama : '',
+        ['q' + n + 'Judul']: judul,
+        ['q' + n + 'Oleh']: oleh ? 'oleh ' + oleh : '',
+        ['q' + n + 'OlehStyle']: oleh ? gayaPengunggah : 'display:none;',
         ['q' + n + 'Path']: d ? d.pathname : '',
         ['q' + n + 'FileStyle']: d ? gayaNamaBerkas : 'display:none;',
         ['q' + n + 'AksiStyle']: d ? unduhBtnStyle : 'display:none;',

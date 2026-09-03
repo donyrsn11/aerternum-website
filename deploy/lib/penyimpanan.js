@@ -110,21 +110,46 @@ export function slug(teks) {
     .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
 }
 
-export function jalurDokumen(tahun, kuartal, klien, namaBerkas) {
+// Pemisah antar-bagian nama berkas tersimpan. Tanda ini aman dipakai karena
+// nama berkas dari pengguna disaring dengan [^\w.\- ] sehingga '~' selalu
+// berubah jadi '_', dan slug() hanya menghasilkan huruf, angka, dan '-'.
+// Jadi '~' tidak akan pernah muncul di dalam salah satu bagiannya.
+const PEMISAH = '~';
+
+// Bentuk jalur: lkpm/<tahun>/<Q>/<klien>/<waktu>~<pengunggah>~<nama berkas>
+// Email pengunggah ikut disimpan supaya selalu jelas siapa yang mengunggah
+// sebuah dokumen kepatuhan. Vercel Blob tidak menyediakan tempat metadata
+// bebas, sehingga keterangan ini dititipkan pada nama berkas tersimpan.
+export function jalurDokumen(tahun, kuartal, klien, namaBerkas, pengunggah) {
   const aman = String(namaBerkas).replace(/[^\w.\- ]+/g, '_').slice(-120);
-  return `lkpm/${Number(tahun)}/${String(kuartal).toUpperCase()}/${slug(klien)}/${Date.now()}-${aman}`;
+  const oleh = slug(pengunggah || 'tidak-diketahui');
+  return `lkpm/${Number(tahun)}/${String(kuartal).toUpperCase()}/${slug(klien)}/`
+    + `${Date.now()}${PEMISAH}${oleh}${PEMISAH}${aman}`;
 }
 
-export async function dokumenLkpm(tahun) {
+// `users` boleh dikosongkan; kalau diberikan, slug pengunggah diterjemahkan
+// kembali menjadi nama orang supaya enak dibaca di layar.
+export async function dokumenLkpm(tahun, users = []) {
   const { blobs } = await list({ prefix: `lkpm/${Number(tahun)}/`, limit: 1000 });
+  const namaDariSlug = new Map(users.map(u => [slug(u.email), u.nama || u.email]));
+
   return blobs.map(b => {
     const bagian = b.pathname.split('/');           // lkpm/tahun/kuartal/klien/berkas
     const berkas = bagian.slice(4).join('/');
+
+    // Berkas yang diunggah sebelum pencatatan ini ada memakai bentuk lama
+    // "<waktu>-<nama>" dan tidak memuat keterangan pengunggah. Keduanya harus
+    // tetap terbaca, jadi bentuk lama ditangani sebagai cadangan.
+    const potong = berkas.split(PEMISAH);
+    const baru = potong.length === 3;
+    const olehSlug = baru ? potong[1] : '';
+
     return {
       pathname: b.pathname,
       kuartal: bagian[2] || '',
       klien: bagian[3] || '',
-      nama: berkas.replace(/^\d{10,}-/, ''),
+      nama: baru ? potong[2] : berkas.replace(/^\d{10,}-/, ''),
+      pengunggah: olehSlug ? (namaDariSlug.get(olehSlug) || olehSlug) : '',
       ukuran: b.size,
       diunggahPada: b.uploadedAt,
     };

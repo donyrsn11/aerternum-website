@@ -66,7 +66,11 @@ export default async function handler(req, res) {
         return res.end();
       }
       const tahun = Number(q.get('tahun')) || new Date().getFullYear();
-      return res.status(200).json({ dokumen: await dokumenLkpm(tahun) });
+      // Daftar pengguna dipakai untuk menerjemahkan slug pengunggah menjadi
+      // nama orang. Kalau gagal dibaca, dokumen tetap ditampilkan.
+      let users = [];
+      try { users = await daftarPengguna(); } catch (e) {}
+      return res.status(200).json({ dokumen: await dokumenLkpm(tahun, users) });
     }
 
     if (req.method !== 'POST') return res.status(405).json({ error: 'Metode tidak didukung' });
@@ -92,7 +96,7 @@ export default async function handler(req, res) {
     if (!isi.length) return res.status(400).json({ error: 'Berkas kosong' });
     if (isi.length > BATAS_UKURAN) return res.status(413).json({ error: 'Berkas melebihi 20 MB' });
 
-    const pathname = jalurDokumen(tahun, kuartal, klien, nama);
+    const pathname = jalurDokumen(tahun, kuartal, klien, nama, pengguna.email);
     await put(pathname, isi, {
       access: 'private',
       contentType: req.headers['content-type'] || 'application/octet-stream',
