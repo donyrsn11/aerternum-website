@@ -39,7 +39,17 @@
         <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Email</label>
         <input type="email" value="{{ email }}" onChange="{{ setEmail }}" placeholder="nama@aerternum-legal.com" style="width:100%;padding:12px 14px;border:1px solid #D8CFC0;border-radius:4px;font-size:15px;margin-bottom:16px;background:#FCFBF8;" />
         <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Password</label>
-        <input type="password" value="{{ password }}" onChange="{{ setPassword }}" onKeyDown="{{ loginKey }}" placeholder="••••••••" style="width:100%;padding:12px 14px;border:1px solid #D8CFC0;border-radius:4px;font-size:15px;margin-bottom:8px;background:#FCFBF8;" />
+        <div style="position:relative;margin-bottom:8px;">
+          <input type="{{ tipePassword }}" value="{{ password }}" onChange="{{ setPassword }}" onKeyDown="{{ loginKey }}" placeholder="••••••••" style="width:100%;padding:12px 46px 12px 14px;border:1px solid #D8CFC0;border-radius:4px;font-size:15px;background:#FCFBF8;" />
+          <button onClick="{{ toggleLihatPassword }}" title="{{ labelLihatPassword }}" aria-label="{{ labelLihatPassword }}" style="position:absolute;right:5px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;padding:9px;display:flex;color:#8A8276;" style-hover="color:#1E1714;">
+            <span style="{{ ikonMataStyle }}">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+            </span>
+            <span style="{{ ikonMataCoretStyle }}">
+              <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+            </span>
+          </button>
+        </div>
         <sc-if value="{{ loginError }}" hint-placeholder-val="{{ false }}">
           <div style="font-size:13px;color:#C0212F;margin:4px 0 6px;">{{ loginError }}</div>
         </sc-if>
@@ -338,7 +348,7 @@ class Component extends DCLogic {
   // server apakah sesi masih berlaku. Selama itu tidak ada yang digambar,
   // supaya layar login tidak sempat berkedip untuk pengguna yang sudah masuk.
   state = {
-    view:'memuat', email:'', password:'', loginError:'', sedangLogin:false,
+    view:'memuat', email:'', password:'', loginError:'', sedangLogin:false, lihatPassword:false,
     saya:null, module:'dash', compTab:'lkpm', regQuery:'', regTopic:'Semua', klienQ:'', sekarang: Date.now(),
     dokumen:[], dokPesan:'', dokPesanBuruk:false,
     daftarUser:[], fNama:'', fEmail:'', fJabatan:'', fKelola:false,
@@ -562,6 +572,14 @@ class Component extends DCLogic {
       loginKey: e => { if (e.key === 'Enter') this.login(); },
       doLogin: () => this.login(),
       doLogout: () => this.logout(),
+      // Tombol mata di kolom password, supaya tidak salah ketik. Keadaannya
+      // selalu mulai tersembunyi, dan disembunyikan lagi begitu login berhasil.
+      tipePassword: this.state.lihatPassword ? 'text' : 'password',
+      toggleLihatPassword: () => this.setState({ lihatPassword: !this.state.lihatPassword }),
+      labelLihatPassword: this.state.lihatPassword ? 'Sembunyikan password' : 'Tampilkan password',
+      ikonMataStyle: this.state.lihatPassword ? 'display:none;' : 'display:flex;',
+      ikonMataCoretStyle: this.state.lihatPassword ? 'display:flex;' : 'display:none;',
+
       loginBtnLabel: this.state.sedangLogin ? 'Memeriksa\u2026' : 'Sign in',
       loginBtnStyle: 'width:100%;margin-top:14px;background:#1E1714;color:#F4F2EC;border:none;border-radius:30px;padding:14px;font-size:15px;font-weight:700;'
         + (this.state.sedangLogin ? 'opacity:.6;cursor:default;' : 'cursor:pointer;'),
@@ -675,7 +693,7 @@ class Component extends DCLogic {
       body: JSON.stringify({ email:this.state.email, password:this.state.password }),
     })
       .then(d => {
-        this.setState({ view:'app', saya:d.pengguna, module:'dash', password:'', sedangLogin:false });
+        this.setState({ view:'app', saya:d.pengguna, module:'dash', password:'', lihatPassword:false, sedangLogin:false });
         this.muatDokumen();
       })
       .catch(e => this.setState({ loginError:e.message, sedangLogin:false }));
