@@ -291,7 +291,7 @@
         </div>
 
         <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;padding:24px 26px;margin-bottom:20px;">
-          <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;margin-bottom:18px;">Tambah pengguna</div>
+          <div style="font-family:'Source Serif 4',Georgia,serif;font-size:19px;font-weight:600;margin-bottom:18px;">{{ judulFormPengguna }}</div>
           <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:14px;align-items:end;">
             <div>
               <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Nama</label>
@@ -299,14 +299,16 @@
             </div>
             <div>
               <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Email</label>
-              <input type="email" value="{{ fEmail }}" onChange="{{ setFEmail }}" placeholder="nama@aerternum-legal.com" style="width:100%;padding:11px 13px;border:1px solid #D8CFC0;border-radius:4px;font-size:14.5px;background:#FCFBF8;" />
+              <input type="email" value="{{ fEmail }}" onChange="{{ setFEmail }}" placeholder="nama@aerternum-legal.com" style="{{ emailInputStyle }}" />
+              <div style="{{ emailTeksStyle }}" title="Email tidak bisa diubah">{{ fEmail }}</div>
             </div>
             <div>
               <label style="display:block;font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6B6259;margin-bottom:7px;">Jabatan</label>
               <input value="{{ fJabatan }}" onChange="{{ setFJabatan }}" placeholder="Associate" style="width:100%;padding:11px 13px;border:1px solid #D8CFC0;border-radius:4px;font-size:14.5px;background:#FCFBF8;" />
             </div>
-            <div>
+            <div style="display:flex;gap:8px;">
               <button onClick="{{ doTambahPengguna }}" style="{{ tambahBtnStyle }}" style-hover="background:#C0212F;">{{ tambahBtnLabel }}</button>
+              <button onClick="{{ doBatalUbah }}" style="{{ batalBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Batal</button>
             </div>
           </div>
           <label style="display:flex;align-items:center;gap:9px;margin-top:16px;font-size:13.5px;color:#4A423A;cursor:pointer;">
@@ -322,15 +324,16 @@
         </div>
 
         <div style="background:#fff;border:1px solid #E4DCCB;border-radius:6px;overflow:hidden;">
-          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) 150px 190px;gap:14px;padding:14px 24px;background:#F4F2EC;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6259;">
+          <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) 150px 270px;gap:14px;padding:14px 24px;background:#F4F2EC;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#6B6259;">
             <span>Nama</span><span>Email</span><span>Jabatan</span><span></span>
           </div>
           <sc-for list="{{ daftarUser }}" as="u" hint-placeholder-count="2">
-            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) 150px 190px;gap:14px;padding:15px 24px;border-top:1px solid #EFE9DD;align-items:center;">
+            <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.3fr) 150px 270px;gap:14px;padding:15px 24px;border-top:1px solid #EFE9DD;align-items:center;">
               <span style="font-size:14px;font-weight:600;">{{ u.nama }}</span>
               <span style="font-size:13.5px;color:#6B6259;word-break:break-all;">{{ u.email }}</span>
               <span style="font-size:13.5px;">{{ u.jabatan }}</span>
               <span style="display:flex;gap:8px;justify-content:flex-end;">
+                <button onClick="{{ doUbahPengguna }}" data-email="{{ u.email }}" data-nama="{{ u.nama }}" data-jabatan="{{ u.jabatanAsli }}" data-kelola="{{ u.kelolaFlag }}" style="{{ miniBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Ubah</button>
                 <button onClick="{{ doResetPassword }}" data-email="{{ u.email }}" style="{{ miniBtnStyle }}" style-hover="border-color:#1E1714;color:#1E1714;">Password baru</button>
                 <button onClick="{{ doHapusPengguna }}" data-email="{{ u.email }}" style="{{ u.hapusStyle }}" style-hover="color:#C0212F;border-color:#C0212F;">Hapus</button>
               </span>
@@ -357,7 +360,7 @@ class Component extends DCLogic {
     saya:null, module:'dash', compTab:'lkpm', regQuery:'', regTopic:'Semua', klienQ:'', sekarang: Date.now(),
     dokumen:[], dokPesan:'', dokPesanBuruk:false,
     daftarUser:[], fNama:'', fEmail:'', fJabatan:'', fKelola:false,
-    sedangTambah:false, userPesan:'', userPesanBuruk:false, passBaru:'',
+    sedangTambah:false, userPesan:'', userPesanBuruk:false, passBaru:'', editEmail:'',
     pLama:'', pBaru:'', pUlang:'', sedangGanti:false, passPesan:'', passPesanBuruk:false,
   };
 
@@ -564,6 +567,7 @@ class Component extends DCLogic {
       selKuartal(l.client, 3), selKuartal(l.client, 4),
     ));
 
+    const mengubahPengguna = !!this.state.editEmail;
     const miniBtnStyle = 'border:1px solid #D8CFC0;background:#fff;color:#6B6259;border-radius:20px;padding:6px 12px;font-size:11.5px;font-weight:700;cursor:pointer;white-space:nowrap;';
     const kini = new Date(this.state.sekarang);
     const today = kini.toLocaleDateString('id-ID', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
@@ -652,16 +656,31 @@ class Component extends DCLogic {
       setFEmail: e => this.setState({ fEmail: e.target.value }),
       setFJabatan: e => this.setState({ fJabatan: e.target.value }),
       setFKelola: e => this.setState({ fKelola: e.target.checked }),
-      doTambahPengguna: () => this.tambahPengguna(),
-      tambahBtnLabel: this.state.sedangTambah ? 'Menyimpan\u2026' : 'Tambah',
-      tambahBtnStyle: 'width:100%;background:#1E1714;color:#F4F2EC;border:none;border-radius:30px;padding:12px;font-size:14px;font-weight:700;'
+      // Kartu formulir dipakai bergantian untuk menambah dan mengubah, supaya
+      // tidak ada dua formulir yang hampir sama di layar yang sama.
+      judulFormPengguna: mengubahPengguna ? 'Ubah pengguna' : 'Tambah pengguna',
+      emailInputStyle: mengubahPengguna ? 'display:none;'
+        : 'width:100%;padding:11px 13px;border:1px solid #D8CFC0;border-radius:4px;font-size:14.5px;background:#FCFBF8;',
+      emailTeksStyle: mengubahPengguna
+        ? 'padding:11px 13px;border:1px solid #EFE9DD;border-radius:4px;font-size:14.5px;background:#F4F2EC;color:#6B6259;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;'
+        : 'display:none;',
+      doTambahPengguna: () => this.simpanPengguna(),
+      tambahBtnLabel: this.state.sedangTambah ? 'Menyimpan\u2026' : (mengubahPengguna ? 'Simpan' : 'Tambah'),
+      tambahBtnStyle: 'flex:1;background:#1E1714;color:#F4F2EC;border:none;border-radius:30px;padding:12px;font-size:14px;font-weight:700;'
         + (this.state.sedangTambah ? 'opacity:.6;cursor:default;' : 'cursor:pointer;'),
+      doBatalUbah: () => this.batalUbah(),
+      batalBtnStyle: mengubahPengguna
+        ? 'border:1px solid #D8CFC0;background:#fff;color:#6B6259;border-radius:30px;padding:12px 18px;font-size:14px;font-weight:600;cursor:pointer;'
+        : 'display:none;',
       miniBtnStyle,
       daftarUser: this.state.daftarUser.map(u => ({
         nama: u.nama, email: u.email, jabatan: u.jabatan || '\u2014',
+        // nilai mentah untuk mengisi formulir saat tombol Ubah ditekan
+        jabatanAsli: u.jabatan || '', kelolaFlag: u.kelolaPengguna ? '1' : '',
         // akun sendiri tidak boleh dihapus dari layar ini
         hapusStyle: (saya && u.email === saya.email) ? 'display:none;' : miniBtnStyle,
       })),
+      doUbahPengguna: e => this.mulaiUbah(e.currentTarget.dataset),
       doResetPassword: e => this.resetPassword(e.currentTarget.dataset.email),
       doHapusPengguna: e => this.hapusPengguna(e.currentTarget.dataset.email),
       userPesan: this.state.userPesan,
@@ -793,27 +812,53 @@ class Component extends DCLogic {
       .catch(e => this.setState({ userPesan:'Daftar pengguna gagal dimuat: ' + e.message, userPesanBuruk:true }));
   }
 
-  tambahPengguna() {
+  // Satu tombol untuk dua keperluan: menambah pengguna baru, atau menyimpan
+  // perubahan pada pengguna yang sedang dibuka lewat tombol Ubah.
+  simpanPengguna() {
     if (this.state.sedangTambah) return;
-    const { fNama, fEmail, fJabatan, fKelola } = this.state;
+    const { fNama, fEmail, fJabatan, fKelola, editEmail } = this.state;
     if (!fNama.trim() || !fEmail.trim()) {
       this.setState({ userPesan:'Nama dan email wajib diisi.', userPesanBuruk:true, passBaru:'' });
       return;
     }
+    const mengubah = !!editEmail;
     this.setState({ sedangTambah:true, userPesan:'', passBaru:'' });
     this.api('/api/users', {
       method:'POST',
       headers:{ 'Content-Type':'application/json' },
-      body: JSON.stringify({ aksi:'tambah', nama:fNama, email:fEmail, jabatan:fJabatan, kelolaPengguna:fKelola }),
+      body: JSON.stringify({
+        aksi: mengubah ? 'ubah' : 'tambah',
+        nama:fNama, email: mengubah ? editEmail : fEmail, jabatan:fJabatan, kelolaPengguna:fKelola,
+      }),
     })
       .then(d => {
         this.setState({
-          sedangTambah:false, fNama:'', fEmail:'', fJabatan:'', fKelola:false,
-          passBaru:d.password, userPesan:'Akun untuk ' + d.email + ' berhasil dibuat.', userPesanBuruk:false,
+          sedangTambah:false, editEmail:'', fNama:'', fEmail:'', fJabatan:'', fKelola:false,
+          passBaru: mengubah ? '' : d.password,
+          userPesan: mengubah
+            ? 'Data ' + d.email + ' berhasil diperbarui.'
+            : 'Akun untuk ' + d.email + ' berhasil dibuat.',
+          userPesanBuruk:false,
         });
         this.muatPengguna();
+        // nama sendiri ikut berubah di sidebar tanpa perlu keluar-masuk lagi
+        if (mengubah && this.state.saya && editEmail === this.state.saya.email) {
+          this.api('/api/session').then(r => this.setState({ saya: r.pengguna })).catch(() => {});
+        }
       })
       .catch(e => this.setState({ sedangTambah:false, userPesan:e.message, userPesanBuruk:true }));
+  }
+
+  mulaiUbah(d) {
+    this.setState({
+      editEmail: d.email, fNama: d.nama || '', fEmail: d.email,
+      fJabatan: d.jabatan || '', fKelola: d.kelola === '1',
+      userPesan:'', passBaru:'',
+    });
+  }
+
+  batalUbah() {
+    this.setState({ editEmail:'', fNama:'', fEmail:'', fJabatan:'', fKelola:false, userPesan:'', passBaru:'' });
   }
 
   resetPassword(email) {

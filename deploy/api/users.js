@@ -2,6 +2,7 @@
 //
 //   GET                      daftar pengguna (tanpa hash)
 //   POST   {aksi:'tambah'}   tambah pengguna, server yang membuatkan password
+//   POST   {aksi:'ubah'}     ubah nama, jabatan, dan hak kelola
 //   POST   {aksi:'reset'}    buat password baru untuk satu pengguna
 //   POST   {aksi:'hapus'}    hapus pengguna
 //
@@ -9,7 +10,7 @@
 // Setelah itu tidak tersimpan di mana pun selain sebagai hash.
 
 import { penggunaSaatIni, passwordAcak, badan } from '../lib/auth.js';
-import { daftarPengguna, tambahPengguna, hapusPengguna, ubahPassword } from '../lib/penyimpanan.js';
+import { daftarPengguna, tambahPengguna, hapusPengguna, ubahPassword, ubahProfil } from '../lib/penyimpanan.js';
 
 export default async function handler(req, res) {
   try {
@@ -34,6 +35,12 @@ export default async function handler(req, res) {
       const password = passwordAcak();
       await tambahPengguna({ email, nama, jabatan, kelolaPengguna, password, oleh: saya.email });
       return res.status(200).json({ ok: true, email: String(email).trim().toLowerCase(), password });
+    }
+
+    if (aksi === 'ubah') {
+      if (!email || !nama) return res.status(400).json({ error: 'Nama dan email wajib diisi' });
+      await ubahProfil({ email, nama, jabatan, kelolaPengguna });
+      return res.status(200).json({ ok: true, email: String(email).trim().toLowerCase() });
     }
 
     if (aksi === 'reset') {

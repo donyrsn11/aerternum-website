@@ -36,7 +36,7 @@ function akunAwal() {
   if (!email || password.length < 12) return null;
   return {
     email,
-    nama: process.env.ADMIN_NAME || 'Dony Renato',
+    nama: process.env.ADMIN_NAME || 'Dony Renato Naibaho',
     jabatan: process.env.ADMIN_ROLE || 'Partner',
     kelolaPengguna: true,   // penanda internal; tidak pernah ditampilkan
     hash: hashPassword(password),
@@ -80,6 +80,27 @@ export async function tambahPengguna({ email, nama, jabatan, kelolaPengguna, pas
     dibuatPada: new Date().toISOString(),
     dibuatOleh: oleh,
   });
+  await simpanPengguna(users);
+}
+
+// Ubah nama, jabatan, dan hak kelola milik satu pengguna. Email tidak ikut
+// diubah karena email adalah identitas akun; untuk ganti email, buat akun baru.
+export async function ubahProfil({ email, nama, jabatan, kelolaPengguna }) {
+  const users = await daftarPengguna();
+  const bersih = String(email).trim().toLowerCase();
+  const u = users.find(x => x.email === bersih);
+  if (!u) { const e = new Error('Pengguna tidak ditemukan'); e.status = 404; throw e; }
+
+  u.nama = String(nama).trim();
+  u.jabatan = String(jabatan || '').trim();
+  u.kelolaPengguna = !!kelolaPengguna;
+
+  // jangan sampai tidak ada lagi yang bisa mengelola pengguna
+  if (!users.some(x => x.kelolaPengguna)) {
+    const e = new Error('Harus ada minimal satu pengguna yang boleh mengelola pengguna lain');
+    e.status = 400;
+    throw e;
+  }
   await simpanPengguna(users);
 }
 
